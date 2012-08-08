@@ -52,7 +52,7 @@ module Puppet::Provider::FileMapper
   end
 
   def self.included(klass)
-    klass.extend Puppet::Provider::Isomorphism::ClassMethods
+    klass.extend Puppet::Provider::FileMapper::ClassMethods
     klass.mk_resource_methods
     klass.initvars
   end
