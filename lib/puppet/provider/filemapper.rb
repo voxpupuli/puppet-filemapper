@@ -143,7 +143,7 @@ module Puppet::Provider::FileMapper
       [resource_type.validproperties, resource_type.parameters].flatten.each do |attr|
         attr = symbolize(attr)
 
-        # Generate attr_reader
+        # Generate the attr_reader method
         define_method(attr) do
           if @property_hash[attr]
             @property_hash[attr]
@@ -152,7 +152,7 @@ module Puppet::Provider::FileMapper
           end
         end
 
-        # Generate attr_writer
+        # Generate the attr_writer and have it mark the resource as dirty when called
         define_method("#{attr}=") do |val|
           @property_hash[attr] = val
           self.class.needs_flush = true
@@ -162,7 +162,7 @@ module Puppet::Provider::FileMapper
 
     def flush
       # Only flush the providers if something was out of sync. If the
-      # including class
+      # including class has indicated a failed run, then refuse to write the file.
       if failed
         Puppet.warning "#{self} is in an error state; refusing to rewrite #{@file_path}"
       elsif needs_flush
