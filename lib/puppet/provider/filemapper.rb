@@ -20,11 +20,9 @@ module Puppet::Provider::FileMapper
       end
     end
 
-    # FIXME This is a hack. The name is a parameter is just that - a parameter,
-    # not a property. However, we need this for when we generate the interfaces
-    # file so I just copy it in blindly.
-    #
-    # Most likely, the name should be a property, not a parameter
+    # FIXME This is a hack. The common convention is to use :name as the 
+    # namevar and use it as a property, but treat it as a param. If this is
+    # treated as a property then it needs to be copied in.
     @property_hash[:name] = @resource.name
 
     self.class.needs_flush = true
@@ -69,7 +67,7 @@ module Puppet::Provider::FileMapper
     attr_accessor :file_path, :needs_flush, :failed
 
     # Intercept all instantiations of providers, present or absent, so that we
-    # can reference everything when we rebuild the interfaces file.
+    # can reference everything when we rebuild the target file
     def new(*args)
       obj = super
       @instances << obj
