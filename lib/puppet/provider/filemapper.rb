@@ -91,7 +91,8 @@ module Puppet::Provider::FileMapper
     end
 
     def instances
-      interfaces = parse_file
+      file_contents = @filetype.read
+      interfaces = parse_file(file_contents)
 
       # Iterate over the hash provided by parse_file, and for each one
       # generate a new provider and copy in the properties. Put all of these
