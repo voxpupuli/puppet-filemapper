@@ -72,16 +72,16 @@ module Puppet::Provider::FileMapper
     # can reference everything when we rebuild the interfaces file.
     def new(*args)
       obj = super
-      @provider_instances << obj
+      @instances << obj
       obj
     end
 
     # self.initvars is a hook upon instantiation of the provider. It's basically
     # the class level constructor
     def initvars
-      @provider_instances = []
+      @instances   = []
       @needs_flush = false
-      @failed = false
+      @failed      = false
     end
 
     # Lazily generate the filetype
@@ -166,7 +166,7 @@ module Puppet::Provider::FileMapper
       if failed
         Puppet.warning "#{self} is in an error state; refusing to rewrite #{@file_path}"
       elsif needs_flush
-        providers = @provider_instances.select {|prov| prov.ensure == :present}
+        providers = @instances.select {|prov| prov.ensure == :present}
         lines = format_resources(providers)
         filetype.backup
         content = lines.join
