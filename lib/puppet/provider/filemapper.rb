@@ -14,7 +14,7 @@ module Puppet::Provider::FileMapper
     # Given a new provider, populate the property hash. If the associated
     # resource has a specific 'should' value then use that. If no value was
     # explicitly set, then use the default value supplied by the type.
-    @resource.class.validproperties.each do |property|
+    [@resource.class.validproperties, resource_type.parameters].flatten.each do |property|
       if value = @resource.should(property)
         @property_hash[property] = value
       end
