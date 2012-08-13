@@ -1,3 +1,4 @@
+require 'puppet/util/filetype'
 
 # Forward declaration
 module PuppetX; end
