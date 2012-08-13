@@ -125,5 +125,30 @@ module PuppetX::FileMapper
 
       nil
     end
+
+    # Generate attr_accessors for the properties, and have them mark the file
+    # as modified if an attr_writer is called.
+    # This is basically ripped off from ParsedFile
+    def mk_resource_methods
+      [resource_type.validproperties, resource_type.parameters].flatten.each do |attr|
+        attr = symbolize(attr)
+
+        # Generate the attr_reader method
+        define_method(attr) do
+          if @property_hash[attr]
+            @property_hash[attr]
+          elsif defined? @resource
+            @resource.should(attr)
+          end
+        end
+
+        # Generate the attr_writer and have it mark the resource as dirty when called
+        define_method("#{attr}=") do |val|
+          @property_hash[attr] = val
+          self.class.needs_flush = true
+        end
+      end
+    end
+
   end
 end
