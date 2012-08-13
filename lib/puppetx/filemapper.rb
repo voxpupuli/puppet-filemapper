@@ -45,29 +45,53 @@ module PuppetX::FileMapper
   end
 
   def self.included(klass)
+    klass.extend PuppetX::FileMapper::ClassMethods
     klass.mk_resource_methods
     klass.initvars
   end
 
-  class << self
+  module ClassMethods
 
     attr_reader :failed
 
     def initvars
+      # Mapped_files: [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
       @mapped_files = Hash.new {|h, k| h[k] = {}}
       @failed       = false
     end
 
-    # Returns all instances of the provider including this class.
+    # Returns all instances of the provider using this mixin.
     #
     # @return [Array<Puppet::Provider>]
     def instances
-      # Validate that the methods required for prefetching are available
+      provider_hashes = load_all_providers_from_disk
+
+      provider_hashes.map do |h|
+        h.merge!({:provider => self.name})
+        new(h)
+      end
+
+    rescue
+      # If something failed while loading instances, mark the provider class
+      # as failed and pass the exception along
+      @failed = true
+      raise
+    end
+
+    def validate_class!
+      # Validate that the methods required for loading files are available
       [:target_files, :parse_file].each do |method|
         unless self.respond_to? method
-          raise NotImplementedError, "#{self.name} has not implemented `self.#{method}`"
+          raise Puppet::DevError, "#{self.name} has not implemented `self.#{method}`"
         end
       end
+    end
+
+    # Reads all files from disk and returns an array of hashes representing providers
+    #
+    # @return [Array<Hash>]
+    def load_all_providers_from_disk
+      validate_class!
 
       # Retrieve a list of files to fetch, and cache a copy of a filetype
       # for each one
@@ -81,16 +105,7 @@ module PuppetX::FileMapper
         provider_hashes.concat(parse_file(filename, filetype.read))
       end
 
-      provider_hashes.map do |h|
-        h.merge!({:provider => self.name})
-        new(h)
-      end
-
-    rescue
-      # If something failed while loading instances, mark the provider class
-      # as failed and pass the exception along
-      @failed = true
-      raise
+      provider_hashes
     end
 
     # Pass over all provider instances, and see if there is a resource with the
