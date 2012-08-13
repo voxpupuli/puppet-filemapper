@@ -25,12 +25,12 @@ Implementation requirements
 To use this mixin, you need to define a class that defines the following
 methods.
 
-### `self.files_to_prefetch`
+### `self.target_files`
 
 This should return an array of filenames specifying which files should be
 prefetched.
 
-### `self.prefetch_file(filename, file_contents)`
+### `self.parse_file(filename, file_contents)`
 
 This should take two values, a string containing the file name, and a string
 containing the contents of the file. It should return an array of hashes,
@@ -39,7 +39,7 @@ where each hash represents {property => value} pairs.
 ### `self.select_file(provider)`
 
 This should take one value, a provider instance. It should return a string
-containing the name that the provider should be flushed to.
+containing the filename that the provider should be flushed to.
 
 ### `self.flush_file(filename, providers)`
 

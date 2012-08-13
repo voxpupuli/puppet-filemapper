@@ -20,7 +20,7 @@ module PuppetX::FileMapper
     # treated as a property then it needs to be copied in.
     @property_hash[:name] = @resource.name
 
-    self.class.needs_flush = true
+    self.class.dirty_resource!(self)
   end
 
   def exists?
@@ -29,7 +29,7 @@ module PuppetX::FileMapper
 
   def destroy
     @property_hash[:ensure] = :absent
-    self.class.needs_flush = true
+    self.class.dirty_resource!(self)
   end
 
   # Delegate flush functionality to the class
@@ -45,47 +45,42 @@ module PuppetX::FileMapper
   end
 
   def self.included(klass)
-    klass.extend Puppet::Provider::FileMapper::ClassMethods
     klass.mk_resource_methods
     klass.initvars
   end
-
 
   class << self
 
     attr_reader :failed
 
     def initvars
-      @mapped_files = {}
+      @mapped_files = Hash.new {|h, k| h[k] = {}}
       @failed       = false
     end
-
-    initvars
 
     # Returns all instances of the provider including this class.
     #
     # @return [Array<Puppet::Provider>]
     def instances
       # Validate that the methods required for prefetching are available
-      [:files_to_prefetch, :prefetch_file].each do |method|
+      [:target_files, :parse_file].each do |method|
         unless self.respond_to? method
           raise NotImplementedError, "#{self.name} has not implemented `self.#{method}`"
         end
       end
 
-      # Retrieve a list of files to prefetch, and cache a copy of a filetype
+      # Retrieve a list of files to fetch, and cache a copy of a filetype
       # for each one
-      files_to_prefetch.each do |file|
-        @mapped_files[file] = Puppet::Util::FileType.filetype(:flat).new(file)
+      target_files.each do |file|
+        @mapped_files[file][:filetype] = Puppet::Util::FileType.filetype(:flat).new(file)
+        @mapped_files[file][:dirty]    = false
       end
 
       provider_hashes = []
       @mapped_files.each_pair do |filename, filetype|
-        provider_hashes.concat(prefetch_file(filename, filetype.read))
+        provider_hashes.concat(parse_file(filename, filetype.read))
       end
 
-      # Add the provider name to each one of the new provider instances
-      # and then generate them.
       provider_hashes.map do |h|
         h.merge!({:provider => self.name})
         new(h)
@@ -126,6 +121,13 @@ module PuppetX::FileMapper
       nil
     end
 
+    # Given a provider that had a property changed, locate the file that
+    # this provider maps to and mark it as dirty
+    def dirty_resource!(resource)
+      dirty_file = self.select_file(resource)
+      @mapped_files[dirty_file][:dirty] = true
+    end
+
     # Generate attr_accessors for the properties, and have them mark the file
     # as modified if an attr_writer is called.
     # This is basically ripped off from ParsedFile
@@ -145,10 +147,9 @@ module PuppetX::FileMapper
         # Generate the attr_writer and have it mark the resource as dirty when called
         define_method("#{attr}=") do |val|
           @property_hash[attr] = val
-          self.class.needs_flush = true
+          self.class.dirty_resource!(self)
         end
       end
     end
-
   end
 end
