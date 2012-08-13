@@ -17,11 +17,37 @@ existing constructs to parse the file.
 The solution for this is to completely bypass parsing in any sort of base
 provider, and hand that over entirely to the including/inheriting class.
 
-This mixin does just that. You define two methods: `self.parse_file` and
-`self.format_resources`. The former takes an object that responds to `#each` and
-returns an array of providers; the latter takes an array of providers and
-produces an object that responds to `#each`. Everything else is handled by the
-FileMapper mixin, such as prefetching, the instances method, single pass file
-flushing, all that neat stuff.
-
 You figure out how to parse and write the file, and this will do the rest.
+
+Implementation requirements
+---------------------------
+
+To use this mixin, you need to define a class that defines the following
+methods.
+
+### `self.files_to_prefetch`
+
+This should return an array of filenames specifying which files should be
+prefetched.
+
+### `self.prefetch_file(filename, file_contents)`
+
+This should take two values, a string containing the file name, and a string
+containing the contents of the file. It should return an array of hashes,
+where each hash represents {property => value} pairs.
+
+### `self.select_file(provider)`
+
+This should take one value, a provider instance. It should return a string
+containing the name that the provider should be flushed to.
+
+### `self.flush_file(filename, providers)`
+
+This should take two values, a string containing the file name to be flushed,
+and an array of providers that should be flushed to this file. It should return
+a string containing the contents of the file to be written.
+
+### (Optional) `self.header`
+
+This method should return a string containing a file header. If no such method
+is defined then it will be ignored.
