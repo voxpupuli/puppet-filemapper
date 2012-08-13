@@ -89,7 +89,7 @@ module PuppetX::FileMapper
     rescue
       # If something failed while loading instances, mark the provider class
       # as failed and pass the exception along
-      self.failed = true
+      @failed = true
       raise
     end
 
