@@ -90,7 +90,8 @@ module PuppetX::FileMapper
       end
     end
 
-    # Reads all files from disk and returns an array of hashes representing providers
+    # Reads all files from disk and returns an array of hashes representing
+    # provider instances.
     #
     # @return [Array<Hash>]
     def load_all_providers_from_disk
@@ -103,6 +104,7 @@ module PuppetX::FileMapper
         @mapped_files[file][:dirty]    = false
       end
 
+      # Read and parse each file.
       provider_hashes = []
       @mapped_files.each_pair do |filename, file_attrs|
         arr = parse_file(filename, file_attrs[:filetype].read)
