@@ -79,8 +79,10 @@ module PuppetX::FileMapper
       raise
     end
 
+    # Validate that the required methods are available.
+    #
+    # @raise Puppet::DevError if an expected method is unavailable
     def validate_class!
-      # Validate that the methods required for loading files are available
       [:target_files, :parse_file].each do |method|
         unless self.respond_to? method
           raise Puppet::DevError, "#{self.name} has not implemented `self.#{method}`"
