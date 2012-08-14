@@ -1,14 +1,13 @@
-require 'puppet'
+require 'spec_helper'
 require 'puppetx/filemapper'
 
 describe PuppetX::FileMapper do
 
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
-    @flattype = Puppet::Util::FileType.filetype(:flat)
+    @flattype = stub 'Class<FileType<Flat>>'
 
-    puts Puppet::Util::FileType.stub(:filetype).with(:flat)
-    puts Puppet::Util::FileType.stub(:filetype).with(:flat).and_return @ramtype
+    Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
   end
 
   let(:dummytype) do
@@ -28,7 +27,6 @@ describe PuppetX::FileMapper do
       provider = dummytype.provide(:foo) { include PuppetX::FileMapper }
       provider.failed.should be_false
     end
-
   end
 
   describe 'when validating the class' do

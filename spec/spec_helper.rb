@@ -1,5 +1,5 @@
 require 'puppet'
-require 'mocha'
+require 'mocha_standalone'
 
 PROJECT_ROOT = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 $LOAD_PATH.unshift(File.join(PROJECT_ROOT, "lib"))
