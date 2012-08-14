@@ -13,8 +13,8 @@ describe PuppetX::FileMapper do
   let(:dummytype) do
     Puppet::Type.newtype(:dummy) do
       newparam(:name, :namevar => true)
-      newparam(:foo)
-      newproperty(:bar)
+      newparam(:fooparam)
+      newproperty(:barprop)
     end
   end
 
@@ -53,14 +53,14 @@ describe PuppetX::FileMapper do
   describe 'when reading' do
     describe 'a single file' do
 
-      let(:data) { [{:name => 'yay', :foo => :bla, :bar => 'baz'}] }
+      let(:data) { [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}] }
 
       subject do
         dummytype.provide(:single) do
           include PuppetX::FileMapper
           def self.target_files; ['/foo']; end
           def self.parse_file(filename, content)
-            [{:name => 'yay', :foo => :bla, :bar => 'baz'}]
+            [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
           end
         end
       end
@@ -90,8 +90,8 @@ describe PuppetX::FileMapper do
           def self.target_files; ['/bar', '/baz']; end
           def self.parse_file(filename, content)
             case filename
-            when '/bar' then [{:name => 'yay', :foo => :bla, :bar => 'baz'}]
-            when '/baz' then [{:name => 'whee', :foo => :ohai, :bar => 'wat'}]
+            when '/bar' then [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
+            when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
             end
           end
         end
@@ -117,8 +117,50 @@ describe PuppetX::FileMapper do
 
         it 'should return the generated array' do
           data = subject.load_all_providers_from_disk
-          data.should be_include({:name => 'yay', :foo => :bla, :bar => 'baz'})
-          data.should be_include({:name => 'whee', :foo => :ohai, :bar => 'wat'})
+          data.should be_include({:name => 'yay', :fooparam => :bla, :barprop => 'baz'})
+          data.should be_include({:name => 'whee', :fooparam => :ohai, :barprop => 'wat'})
+        end
+      end
+    end
+  end
+
+  describe 'when generating instances' do
+
+    subject do
+      dummytype.provide(:multiple) do
+        include PuppetX::FileMapper
+        attr_reader :property_hash
+        def self.target_files; ['/bar', '/baz']; end
+        def self.parse_file(filename, content)
+          case filename
+          when '/bar' then [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
+          when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
+          end
+        end
+      end
+    end
+
+    before do
+      @flattype.stubs(:new).with('/bar').once.returns(stub(:read => 'barbar'))
+      @flattype.stubs(:new).with('/baz').once.returns(stub(:read => 'bazbaz'))
+    end
+
+
+    it 'should generate a provider instance for each hash' do
+      provs = subject.instances
+      provs.should have(2).items
+    end
+
+    [
+      {:name => 'yay', :fooparam => :bla, :barprop => 'baz'},
+      {:name => 'whee', :fooparam => :ohai, :barprop => 'wat'},
+    ].each do |values|
+      it "should match hash values to provider properties for #{values[:name]}" do
+        provs = subject.instances
+        prov = provs.find {|prov| prov.name == values[:name]}
+
+        values.each_pair do |property, value|
+          prov.send(property).should == value
         end
       end
     end
