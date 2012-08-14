@@ -104,8 +104,9 @@ module PuppetX::FileMapper
       end
 
       provider_hashes = []
-      @mapped_files.each_pair do |filename, filetype|
-        provider_hashes.concat(parse_file(filename, filetype.read))
+      @mapped_files.each_pair do |filename, file_attrs|
+        arr = parse_file(filename, file_attrs[:filetype].read)
+        provider_hashes.concat arr
       end
 
       provider_hashes
