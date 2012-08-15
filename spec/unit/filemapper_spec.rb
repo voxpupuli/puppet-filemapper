@@ -144,6 +144,16 @@ describe PuppetX::FileMapper do
       @flattype.stubs(:new).with('/baz').once.returns(stub(:read => 'bazbaz'))
     end
 
+    let(:yayhash)  {{:name => 'yay', :fooparam => :bla, :barprop => 'baz', :provider => subject.name}}
+    let(:wheehash) {{:name => 'whee', :fooparam => :ohai, :barprop => 'wat', :provider => subject.name}}
+
+    it 'should generate a provider instance from hashes' do
+
+      subject.expects(:new).with(yayhash).returns stub()
+      subject.expects(:new).with(wheehash).returns stub()
+      subject.instances
+
+    end
 
     it 'should generate a provider instance for each hash' do
       provs = subject.instances
@@ -160,6 +170,52 @@ describe PuppetX::FileMapper do
         prov = provs.find {|prov| prov.name == values[:name]}
         values.each_pair { |property, value| prov.send(property).should == value }
       end
+    end
+  end
+
+  describe 'when prefetching' do
+    subject do
+      dummytype.provide(:multiple) do
+        include PuppetX::FileMapper
+        attr_reader :property_hash
+        def self.target_files; ['/bar', '/baz']; end
+        def self.parse_file(filename, content)
+          case filename
+          when '/bar' then [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
+          when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
+          end
+        end
+      end
+    end
+
+    before do
+      @yay_params = {:name => 'yay', :fooparam => :bla, :barprop => 'baz'}
+      @whee_params = {:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}
+      @dead_params = {:name => 'dead', :fooparam => :nofoo, :barprop => 'sadprop'}
+
+      @provider_yay = subject.new(@yay_params.merge({:provider => subject.name}))
+      @provider_whee = subject.new(@whee_params.merge({:provider => subject.name}))
+
+      subject.stubs(:instances).returns [@provider_yay, @provider_whee]
+    end
+
+    let(:resources) do
+      [@yay_params, @whee_params, @dead_params].inject({}) do |h, params|
+        h[params[:name]] = dummytype.new(params)
+        h
+      end
+    end
+
+    it "should update resources with existing providers" do
+      resources['yay'].expects(:provider=).with(@provider_yay)
+      resources['whee'].expects(:provider=).with(@provider_whee)
+
+      subject.prefetch(resources)
+    end
+
+    it "should not update resources that don't have providers" do
+      resources['dead'].expects(:provider=).never
+      subject.prefetch(resources)
     end
   end
 end
