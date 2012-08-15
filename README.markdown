@@ -36,10 +36,10 @@ This should take two values, a string containing the file name, and a string
 containing the contents of the file. It should return an array of hashes,
 where each hash represents {property => value} pairs.
 
-### `self.select_file(provider)`
+### `select_file`
 
-This should take one value, a provider instance. It should return a string
-containing the filename that the provider should be flushed to.
+This is a provider instance method. It should return a string containing the
+filename that the provider should be flushed to.
 
 ### `self.flush_file(filename, providers)`
 
