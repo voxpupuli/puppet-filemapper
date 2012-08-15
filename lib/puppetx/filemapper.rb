@@ -124,6 +124,8 @@ module PuppetX::FileMapper
     # same namevar as a provider instance. If such a resource exists, set the
     # provider field of that resource to the existing provider.
     #
+    # This is a hook method that will be called by Puppet::Transaction#prefetch
+    #
     # @param [Hash<String, Puppet::Resource>] resources
     def prefetch(resources = {})
 
