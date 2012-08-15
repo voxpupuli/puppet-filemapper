@@ -139,9 +139,9 @@ module PuppetX::FileMapper
     # Given a provider that had a property changed, locate the file that
     # this provider maps to and mark it as dirty
     #
-    # @param [Puppet::Resource]
-    def dirty_resource!(resource)
-      dirty_file = self.select_file(resource)
+    # @param [Puppet::Provider]
+    def dirty_resource!(provider)
+      dirty_file = self.select_file(provider)
       @mapped_files[dirty_file][:dirty] = true
     end
 
