@@ -25,7 +25,7 @@ describe PuppetX::FileMapper do
   describe 'when included' do
     it 'should initialize the provider as not failed' do
       provider = dummytype.provide(:foo) { include PuppetX::FileMapper }
-      provider.failed.should be_false
+      provider.should_not be_failed
     end
   end
 

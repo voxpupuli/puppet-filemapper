@@ -46,13 +46,15 @@ module PuppetX::FileMapper
 
   module ClassMethods
 
-    attr_reader :failed
-
     def initvars
       # Mapped_files: [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
       @mapped_files = Hash.new {|h, k| h[k] = {}}
       @failed       = false
       @all_providers = []
+    end
+
+    def failed?
+      @failed
     end
 
     # Register all provider instances with the class
