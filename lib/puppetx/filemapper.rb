@@ -141,8 +141,6 @@ module PuppetX::FileMapper
           resource.provider = provider
         end
       end
-
-      nil
     end
 
     # Given a provider that had a property changed, locate the file that
