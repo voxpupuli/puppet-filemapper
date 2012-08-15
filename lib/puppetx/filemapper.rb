@@ -52,6 +52,20 @@ module PuppetX::FileMapper
       # Mapped_files: [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
       @mapped_files = Hash.new {|h, k| h[k] = {}}
       @failed       = false
+      @all_providers = []
+    end
+
+    # Register all provider instances with the class
+    #
+    # In order to flush all provider instances to a given file, we need to be
+    # able to track them all. When provider#flush is called and the file
+    # associated with that provider instance is dirty, the file needs to be
+    # flushed and all provider instances associated with that file will be
+    # passed to self.flush_file
+    def new(*args)
+      obj = super
+      @all_providers << obj
+      obj
     end
 
     # Returns all instances of the provider using this mixin.
