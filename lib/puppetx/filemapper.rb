@@ -134,7 +134,7 @@ module PuppetX::FileMapper
       end
 
       # For each prefetched resource, try to match it to a provider
-      resources.each do |resource_name, resource|
+      resources.each_pair do |resource_name, resource|
         if provider = providers[resource_name]
           resource.provider = provider
         end
