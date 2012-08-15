@@ -125,7 +125,6 @@ describe PuppetX::FileMapper do
   end
 
   describe 'when generating instances' do
-
     subject do
       dummytype.provide(:multiple) do
         include PuppetX::FileMapper
@@ -149,6 +148,7 @@ describe PuppetX::FileMapper do
     it 'should generate a provider instance for each hash' do
       provs = subject.instances
       provs.should have(2).items
+      provs.each { |prov| prov.should be_a_kind_of(Puppet::Provider)}
     end
 
     [
@@ -158,10 +158,7 @@ describe PuppetX::FileMapper do
       it "should match hash values to provider properties for #{values[:name]}" do
         provs = subject.instances
         prov = provs.find {|prov| prov.name == values[:name]}
-
-        values.each_pair do |property, value|
-          prov.send(property).should == value
-        end
+        values.each_pair { |property, value| prov.send(property).should == value }
       end
     end
   end
