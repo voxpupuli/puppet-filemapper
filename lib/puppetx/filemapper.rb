@@ -93,7 +93,11 @@ module PuppetX::FileMapper
     # Reads all files from disk and returns an array of hashes representing
     # provider instances.
     #
-    # @return [Array<Hash>]
+    # @return [Array<Hash<String, Hash<Symbol, Object>>>]
+    #   An array containing a set of hashes, keyed with a file path and values
+    #   being a hash containg the state of the file and the filetype associated
+    #   with it.
+    #
     def load_all_providers_from_disk
       validate_class!
 
@@ -114,9 +118,13 @@ module PuppetX::FileMapper
       provider_hashes
     end
 
+    # Match up all resources that have existing providers.
+    #
     # Pass over all provider instances, and see if there is a resource with the
     # same namevar as a provider instance. If such a resource exists, set the
     # provider field of that resource to the existing provider.
+    #
+    # @param [Hash<String, Puppet::Resource>] resources
     def prefetch(resources = {})
 
       # generate hash of {provider_name => provider}
@@ -144,6 +152,8 @@ module PuppetX::FileMapper
 
     # Given a provider that had a property changed, locate the file that
     # this provider maps to and mark it as dirty
+    #
+    # @param [Puppet::Resource]
     def dirty_resource!(resource)
       dirty_file = self.select_file(resource)
       @mapped_files[dirty_file][:dirty] = true
