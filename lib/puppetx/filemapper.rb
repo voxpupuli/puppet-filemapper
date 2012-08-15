@@ -140,13 +140,6 @@ module PuppetX::FileMapper
         end
       end
 
-      # Generate default providers for resources that don't exist on disk
-      # FIXME this won't work with composite namevars or types whose namevar
-      # is not 'name'
-      resources.values.select {|resource| resource.provider.nil? }.each do |resource|
-        resource.provider = new(:name => resource.name, :provider => name, :ensure => :absent)
-      end
-
       nil
     end
 
