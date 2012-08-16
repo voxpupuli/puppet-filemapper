@@ -20,7 +20,7 @@ module PuppetX::FileMapper
     # treated as a property then it needs to be copied in.
     @property_hash[:name] = @resource.name
 
-    self.class.dirty_resource!(self)
+    self.dirty!
   end
 
   # Use the prefetched status to determine of the resource exists.
@@ -37,8 +37,15 @@ module PuppetX::FileMapper
   # This method is necessary for the provider to be ensurable
   def destroy
     @property_hash[:ensure] = :absent
-    self.class.dirty_resource!(self)
+    self.dirty!
   end
+
+  # Mark the file associated with this resource as dirty
+  def dirty!
+    file = select_file
+    self.class.dirty_file! file
+  end
+
 
   # When processing on this resource is complete, trigger a flush on the file
   # that this resource belongs to.
@@ -167,15 +174,6 @@ module PuppetX::FileMapper
       end
     end
 
-    # Given a provider that had a property changed, locate the file that
-    # this provider maps to and mark it as dirty
-    #
-    # @param [Puppet::Provider]
-    def dirty_resource!(provider)
-      dirty_file = provider.select_file
-      @mapped_files[dirty_file][:dirty] = true
-    end
-
     # Generate attr_accessors for the properties, and have them mark the file
     # as modified if an attr_writer is called.
     # This is basically ripped off from ParsedFile
@@ -195,7 +193,7 @@ module PuppetX::FileMapper
         # Generate the attr_writer and have it mark the resource as dirty when called
         define_method("#{attr}=") do |val|
           @property_hash[attr] = val
-          self.class.dirty_resource!(self)
+          self.dirty!
         end
       end
     end
@@ -209,6 +207,10 @@ module PuppetX::FileMapper
       @all_providers.select do |provider|
         provider.select_file == filename
       end
+    end
+
+    def dirty_file!(filename)
+      @mapped_files[filename][:dirty] = true
     end
 
     # Flush all providers associated with the given file to disk.
