@@ -10,6 +10,10 @@ describe PuppetX::FileMapper do
     Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
   end
 
+  after :each do
+    dummytype.defaultprovider = nil
+  end
+
   let(:dummytype) do
     Puppet::Type.newtype(:dummy) do
       ensurable
@@ -58,19 +62,19 @@ describe PuppetX::FileMapper do
       provider.should_not be_failed
     end
 
-    describe 'and is initialized' do
+    describe 'when generating attr_accessors' do
       subject { multiple_file_provider.new(params_yay) }
 
-      describe 'and configures properties' do
+      describe 'for properties' do
         it { should respond_to :barprop }
         it { should respond_to :barprop= }
         it { should respond_to :ensure }
         it { should respond_to :ensure= }
       end
 
-      describe 'and configures parameters' do
-        it { should respond_to :fooparam }
-        it { should respond_to :fooparam= }
+      describe 'for parameters' do
+        it { should_not respond_to :fooparam }
+        it { should_not respond_to :fooparam= }
       end
     end
   end
