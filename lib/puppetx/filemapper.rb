@@ -74,6 +74,10 @@ module PuppetX::FileMapper
       @failed
     end
 
+    def failed!
+      @failed = true
+    end
+
     # Register all provider instances with the class
     #
     # In order to flush all provider instances to a given file, we need to be
