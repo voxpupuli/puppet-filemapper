@@ -7,6 +7,7 @@ describe PuppetX::FileMapper do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
     @flattype = stub 'Class<FileType<Flat>>'
 
+
     Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
   end
 
@@ -275,17 +276,93 @@ describe PuppetX::FileMapper do
     end
 
     describe 'on a property' do
-      it 'should mark the related file as dirty'
+      let(:resource) { resource = dummytype.new(params_yay) }
+
+      before do
+        prov = subject.new(params_yay.merge({:ensure => :present}))
+        subject.stubs(:instances).returns [prov]
+        subject.prefetch({params_yay[:name] => resource})
+      end
+
+      it 'should mark the related file as dirty' do
+        subject.mapped_files['/blor'][:dirty].should be_false
+        resource.property(:barprop).value = 'new value'
+        resource.property(:barprop).sync
+        subject.mapped_files['/blor'][:dirty].should be_true
+      end
     end
-  end
 
-  describe 'when determining whether to flush' do
-    it 'should use the provider instance method `select_file` to locate the destination file' do
+    describe 'on a parameter' do
+      let(:resource) { resource = dummytype.new(params_yay) }
+
+      before do
+        prov = subject.new(params_yay.merge({:ensure => :present}))
+        subject.stubs(:instances).returns [prov]
+        subject.prefetch({params_yay[:name] => resource})
+      end
+
+      it 'should not mark the related file as dirty' do
+        subject.mapped_files['/blor'][:dirty].should be_false
+        resource.parameter(:fooparam).value = 'new value'
+        resource.flush
+        subject.mapped_files['/blor'][:dirty].should be_false
+      end
     end
 
-    describe 'with a non-existent resource' do
-      it 'should mark the related file as dirty upon provider#create' do
+    describe 'when determining whether to flush' do
 
+      let(:resource) { resource = dummytype.new(params_yay) }
+
+      it 'should use the provider instance method `select_file` to locate the destination file' do
+        resource.provider.expects(:select_file).returns '/blor'
+        resource.property(:barprop).value = 'zoom'
+        resource.property(:barprop).sync
+      end
+
+      it 'should trigger the class dirty_file! method' do
+        subject.expects(:dirty_file!).with('/blor')
+        resource.property(:barprop).value = 'zoom'
+        resource.property(:barprop).sync
+      end
+
+      it 'should forward provider#flush to the class' do
+        subject.expects(:flush_file).with('/blor')
+        resource.flush
+      end
+
+      describe 'and performing the flush' do
+
+        let(:newtype) { @ramtype.new('/blor') }
+        before do
+          newtype.stubs(:backup)
+        end
+
+
+        it 'should generate filetypes for new files' do
+          subject.dirty_file!('/blor')
+          @flattype.expects(:new).with('/blor').returns newtype
+          resource.flush
+        end
+
+        it 'should use existing filetypes for existing files' do
+          stub_filetype = stub()
+          stub_filetype.expects(:backup)
+          stub_filetype.expects(:write)
+          subject.dirty_file!('/blor')
+          subject.mapped_files['/blor'][:filetype] = stub_filetype
+          resource.flush
+        end
+
+        it 'should trigger a flush on dirty files' do
+          subject.dirty_file!('/blor')
+          subject.expects(:perform_write).with('/blor', 'multiple flush')
+          resource.flush
+        end
+
+        it 'should not flush clean files' do
+          subject.expects(:perform_write).never
+          resource.flush
+        end
       end
     end
   end
