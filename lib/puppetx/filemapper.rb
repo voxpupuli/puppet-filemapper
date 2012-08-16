@@ -47,6 +47,8 @@ module PuppetX::FileMapper
 
   module ClassMethods
 
+    attr_reader :mapped_files
+
     def initvars
       # Mapped_files: [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
       @mapped_files = Hash.new {|h, k| h[k] = {}}
