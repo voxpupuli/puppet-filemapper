@@ -236,11 +236,7 @@ module PuppetX::FileMapper
 
         file_contents = self.format_file(filename, target_providers)
 
-        # We have a dirty file and the new contents ready, back up the file and perform the flush.
-        filetype = @mapped_files[filename][:filetype]
-        # XXX CHECK FOR NIL
-        filetype.backup
-        filetype.write(file_contents)
+        perform_write(filename, file_contents)
       else
         Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
       end
@@ -250,6 +246,18 @@ module PuppetX::FileMapper
       # flushed but we can stop smashing things.
       @failed = true
       raise
+    end
+
+    # We have a dirty file and the new contents ready, back up the file and perform the flush.
+    #
+    # @param [String] filename The destination filename
+    # @param [String] contents The new file contents
+    def perform_write(filename, contents)
+      @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(:flat).new(filename)
+      filetype = @mapped_files[filename][:filetype]
+
+      filetype.backup
+      filetype.write(contents)
     end
   end
 end
