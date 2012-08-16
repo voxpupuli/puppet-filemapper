@@ -46,8 +46,3 @@ filename that the provider should be flushed to.
 This should take two values, a string containing the file name to be flushed,
 and an array of providers that should be flushed to this file. It should return
 a string containing the contents of the file to be written.
-
-### (Optional) `self.header`
-
-This method should return a string containing a file header. If no such method
-is defined then it will be ignored.
