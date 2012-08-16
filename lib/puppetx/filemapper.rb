@@ -109,7 +109,7 @@ module PuppetX::FileMapper
     #
     # @raise Puppet::DevError if an expected method is unavailable
     def validate_class!
-      required_class_hooks    = [:target_files, :parse_file]
+      required_class_hooks    = [:target_files, :parse_file, :format_file]
       required_instance_hooks = [:select_file]
 
       required_class_hooks.each do |method|

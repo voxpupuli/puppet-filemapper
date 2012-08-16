@@ -31,6 +31,7 @@ describe PuppetX::FileMapper do
         [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
       end
       def select_file; '/foo'; end
+      def self.format_file(filename, providers); 'flushback'; end
     end
   end
 
@@ -45,6 +46,7 @@ describe PuppetX::FileMapper do
         end
       end
       def select_file; '/blor'; end
+      def self.format_file(filename, providers); 'multiple flush'; end
     end
   end
 
@@ -85,7 +87,7 @@ describe PuppetX::FileMapper do
         dummytype.provide(:incomplete) { include PuppetX::FileMapper }
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /target_files/ }
+      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self.target_files/ }
     end
 
     describe "and it doesn't implement self.parse_file" do
@@ -96,7 +98,7 @@ describe PuppetX::FileMapper do
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /parse_file/}
+      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self.parse_file/}
     end
 
     describe "and it doesn't implement #select_file" do
@@ -105,10 +107,24 @@ describe PuppetX::FileMapper do
           include PuppetX::FileMapper
           def self.target_files; end
           def self.parse_file(filename, content); end
+          def self.format_file(filename, resources); 'foo'; end
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /select_file/}
+      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /#select_file/}
+    end
+
+    describe "and it doesn't implement self.format_file" do
+      subject do
+        dummytype.provide(:incomplete) do
+          include PuppetX::FileMapper
+          def self.target_files; end
+          def self.parse_file(filename, content); end
+          def select_file; '/foo'; end
+        end
+      end
+
+      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self\.format_file/}
     end
   end
 
@@ -241,8 +257,17 @@ describe PuppetX::FileMapper do
     end
 
     describe 'from absent to present' do
+      let(:resource) { dummytype.new(:name => 'boom', :barprop => 'bang') }
       it 'should mark the related file as dirty' do
-        resource = dummytype.new(:name => 'boom', :barprop => 'bang')
+        subject.mapped_files['/blor'][:dirty].should be_false
+        resource.property(:ensure).sync
+        subject.mapped_files['/blor'][:dirty].should be_true
+      end
+    end
+
+    describe 'from present to absent' do
+      it 'should mark the related file as dirty' do
+        resource = dummytype.new(:name => 'boom', :barprop => 'bang', :ensure => :absent)
         subject.mapped_files['/blor'][:dirty].should be_false
         resource.property(:ensure).sync
         subject.mapped_files['/blor'][:dirty].should be_true
