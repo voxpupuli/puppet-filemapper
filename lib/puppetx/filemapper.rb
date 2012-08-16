@@ -33,9 +33,10 @@ module PuppetX::FileMapper
     self.class.dirty_resource!(self)
   end
 
-  # Delegate flush functionality to the class
+  # When processing on this resource is complete, trigger a flush on the file
+  # that this resource belongs to.
   def flush
-    self.class.flush
+    self.class.flush_file(self.select_file)
   end
 
   def self.included(klass)
