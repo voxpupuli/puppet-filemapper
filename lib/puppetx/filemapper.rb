@@ -5,12 +5,11 @@ module PuppetX; end
 
 module PuppetX::FileMapper
 
+  # Copy all desired resource properties into this resource for generation upon flush
+  #
+  # This method is necessary for the provider to be ensurable
   def create
-    # This was ripped off from parsedfile
-    # Given a new provider, populate the property hash. If the associated
-    # resource has a specific 'should' value then use that. If no value was
-    # explicitly set, then use the default value supplied by the type.
-    [@resource.class.validproperties, resource_type.parameters].flatten.each do |property|
+    @resource.class.validproperties.each do |property|
       if value = @resource.should(property)
         @property_hash[property] = value
       end
@@ -24,10 +23,18 @@ module PuppetX::FileMapper
     self.class.dirty_resource!(self)
   end
 
+  # Use the prefetched status to determine of the resource exists.
+  #
+  # This method is necessary for the provider to be ensurable
+  #
+  # @return [TrueClass || FalseClass]
   def exists?
     @property_hash[:ensure] and @property_hash[:ensure] == :present
   end
 
+  # Update the property hash to mark this resource as absent for flushing
+  #
+  # This method is necessary for the provider to be ensurable
   def destroy
     @property_hash[:ensure] = :absent
     self.class.dirty_resource!(self)
@@ -173,7 +180,7 @@ module PuppetX::FileMapper
     # as modified if an attr_writer is called.
     # This is basically ripped off from ParsedFile
     def mk_resource_methods
-      [resource_type.validproperties, resource_type.parameters].flatten.each do |attr|
+      resource_type.validproperties.each do |attr|
         attr = symbolize(attr)
 
         # Generate the attr_reader method
