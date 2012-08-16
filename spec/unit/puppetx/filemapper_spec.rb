@@ -227,4 +227,36 @@ describe PuppetX::FileMapper do
       subject.prefetch(resources)
     end
   end
+
+  describe 'on resource state change' do
+    subject { multiple_file_provider }
+
+    before do
+      dummytype.defaultprovider = subject
+      subject.any_instance.stubs(:resource_type).returns dummytype
+    end
+
+    describe 'from absent to present' do
+      it 'should mark the related file as dirty' do
+        resource = dummytype.new(:name => 'boom', :barprop => 'bang')
+        subject.new(resource)
+        resource.property(:ensure).sync
+      end
+    end
+
+    describe 'on a property' do
+      it 'should mark the related file as dirty'
+    end
+  end
+
+  describe 'when determining whether to flush' do
+    it 'should use the provider instance method `select_file` to locate the destination file' do
+    end
+
+    describe 'with a non-existent resource' do
+      it 'should mark the related file as dirty upon provider#create' do
+
+      end
+    end
+  end
 end
