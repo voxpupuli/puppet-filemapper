@@ -30,7 +30,7 @@ describe PuppetX::FileMapper do
   end
 
   let(:multiple_file_provider) do
-    dummytype.provide(:multiple) do
+    dummytype.provide(:multiple, :resource_type => dummytype) do
       include PuppetX::FileMapper
       def self.target_files; ['/bar', '/baz']; end
       def self.parse_file(filename, content)
