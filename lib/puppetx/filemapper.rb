@@ -184,5 +184,55 @@ module PuppetX::FileMapper
         end
       end
     end
+
+    # Generate an array of providers that should be flushed to a specific file
+    #
+    # @param [String] filename The name of the file to find providers for
+    #
+    # @return [Array<Puppet::Provider>]
+    def collect_providers_for_file(filename)
+      @all_providers.select do |provider|
+        provider.select_file == filename
+      end
+    end
+
+    # Flush all providers associated with the given file to disk.
+    #
+    # If the provider is in a failure state, the provider class will refuse to
+    # flush any file, since we're in an unknown state.
+    #
+    # @param [String] filename The path of the file to be flushed
+    def flush_file(filename)
+      if failed?
+        Puppet.error "#{self.name} is in an error state, refusing to flush file #{filename}"
+        return
+      end
+
+      if @mapped_files[filename][:dirty]
+
+        target_providers = collect_providers_for_file(filename)
+
+        # XXX Perhaps don't raise an exception on this case.
+        if target_providers.empty?
+          raise Puppet::DevError, "#{self.name} was requested to flush file #{filename} but no provider instances are associated with it"
+        end
+
+        file_contents = self.format_file(filename, target_providers)
+
+        # We have a dirty file and the new contents ready, back up the file and perform the flush.
+        filetype = @mapped_files[filename][:filetype]
+        # XXX CHECK FOR NIL
+        filetype.backup
+        filetype.write(file_contents)
+      else
+        Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
+      end
+    rescue => e
+      # If something failed during the flush process, mark the provider as
+      # failed. There's not much we can do about any file that's already been
+      # flushed but we can stop smashing things.
+      @failed = true
+      raise
+    end
   end
 end
