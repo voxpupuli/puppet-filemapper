@@ -93,10 +93,15 @@ module PuppetX::FileMapper
     #
     # @raise Puppet::DevError if an expected method is unavailable
     def validate_class!
-      [:target_files, :parse_file].each do |method|
-        unless self.respond_to? method
-          raise Puppet::DevError, "#{self.name} has not implemented `self.#{method}`"
-        end
+      required_class_hooks    = [:target_files, :parse_file]
+      required_instance_hooks = [:select_file]
+
+      required_class_hooks.each do |method|
+        raise Puppet::DevError, "#{self} has not implemented `self.#{method}`" unless self.respond_to? method
+      end
+
+      required_instance_hooks.each do |method|
+        raise Puppet::DevError, "#{self} has not implemented `##{method}`" unless self.method_defined? method
       end
     end
 
@@ -158,7 +163,7 @@ module PuppetX::FileMapper
     #
     # @param [Puppet::Provider]
     def dirty_resource!(provider)
-      dirty_file = self.select_file(provider)
+      dirty_file = provider.select_file
       @mapped_files[dirty_file][:dirty] = true
     end
 
