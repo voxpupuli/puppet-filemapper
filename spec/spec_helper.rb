@@ -1,3 +1,5 @@
+require 'rubygems'
+require 'rspec'
 require 'puppet'
 require 'mocha_standalone'
 
