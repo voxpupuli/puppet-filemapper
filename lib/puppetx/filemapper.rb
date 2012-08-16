@@ -15,11 +15,6 @@ module PuppetX::FileMapper
       end
     end
 
-    # FIXME This is a hack. The common convention is to use :name as the
-    # namevar and use it as a property, but treat it as a param. If this is
-    # treated as a property then it needs to be copied in.
-    @property_hash[:name] = @resource.name
-
     self.dirty!
   end
 
