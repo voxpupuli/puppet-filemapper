@@ -376,4 +376,52 @@ describe PuppetX::FileMapper do
       end
     end
   end
+
+  describe 'when formatting resources for flushing' do
+    let(:provider_class) { multiple_file_provider }
+
+    let(:new_resource) { dummytype.new(params_yay) }
+
+    let(:current_provider) { provider_class.new(params_whee) }
+    let(:current_resource) { dummytype.new(params_whee) }
+
+    let(:remove_provider) { provider_class.new(params_nope) }
+    let(:remove_resource) { dummytype.new(params_nope.merge({:ensure => :absent})) }
+
+    let(:unmanaged_provider) { provider_class.new(:name => 'ignoreme', :fooparam => 'zoom', :barprop => 'squid', :ensure => :present) }
+
+    let(:provider_stubs) { [current_provider, remove_provider, unmanaged_provider] }
+    let(:resource_stubs) { [new_resource, current_resource, remove_resource] }
+
+    before do
+      dummytype.defaultprovider = provider_class
+      provider_class.any_instance.stubs(:resource_type).returns dummytype
+
+      provider_class.stubs(:instances).returns provider_stubs
+      provider_class.prefetch(resource_stubs.inject({}) { |h, r| h[r.name] = r; h})
+
+      # Pretend that we're the resource harness and apply the ensure param
+      resource_stubs.each { |r| r.property(:ensure).sync }
+    end
+
+    it 'should collect all resources for a given file' do
+      provider_class.expects(:collect_providers_for_file).with('/blor').returns []
+      provider_class.stubs(:perform_write)
+      provider_class.flush_file('/blor')
+    end
+
+    describe 'and selecting' do
+      subject { multiple_file_provider.collect_providers_for_file('/blor').map(&:name) }
+
+      describe 'present resources' do
+        it { should be_include 'yay' }
+        it { should be_include 'whee' }
+        it { should be_include 'ignoreme' }
+      end
+
+      describe 'absent resources' do
+        it { should_not be_include 'nope' }
+      end
+    end
+  end
 end
