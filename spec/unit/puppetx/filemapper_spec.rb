@@ -195,8 +195,8 @@ describe PuppetX::FileMapper do
       params_yay.merge!({:provider => subject.name})
       params_whee.merge!({:provider => subject.name})
 
-      subject.expects(:new).with(params_yay).returns stub()
-      subject.expects(:new).with(params_whee).returns stub()
+      subject.expects(:new).with(params_yay.merge({:ensure => :present})).returns stub()
+      subject.expects(:new).with(params_whee.merge({:ensure => :present})).returns stub()
       subject.instances
 
     end

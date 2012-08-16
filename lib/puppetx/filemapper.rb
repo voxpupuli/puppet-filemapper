@@ -94,7 +94,7 @@ module PuppetX::FileMapper
       provider_hashes = load_all_providers_from_disk
 
       provider_hashes.map do |h|
-        h.merge!({:provider => self.name})
+        h.merge!({:provider => self.name, :ensure => :present})
         new(h)
       end
 
@@ -200,12 +200,15 @@ module PuppetX::FileMapper
 
     # Generate an array of providers that should be flushed to a specific file
     #
+    # Only providers that should be present will be returned regardless of
+    # the containing file.
+    #
     # @param [String] filename The name of the file to find providers for
     #
     # @return [Array<Puppet::Provider>]
     def collect_providers_for_file(filename)
       @all_providers.select do |provider|
-        provider.select_file == filename
+        provider.select_file == filename and provider.ensure == :present
       end
     end
 
