@@ -308,61 +308,71 @@ describe PuppetX::FileMapper do
         subject.mapped_files['/blor'][:dirty].should be_false
       end
     end
+  end
 
-    describe 'when determining whether to flush' do
+  describe 'when determining whether to flush' do
+    subject { multiple_file_provider }
 
-      let(:resource) { resource = dummytype.new(params_yay) }
+    before do
+      dummytype.defaultprovider = subject
+      subject.any_instance.stubs(:resource_type).returns dummytype
+    end
 
-      it 'should use the provider instance method `select_file` to locate the destination file' do
-        resource.provider.expects(:select_file).returns '/blor'
-        resource.property(:barprop).value = 'zoom'
-        resource.property(:barprop).sync
-      end
+    let(:resource) { resource = dummytype.new(params_yay) }
 
-      it 'should trigger the class dirty_file! method' do
-        subject.expects(:dirty_file!).with('/blor')
-        resource.property(:barprop).value = 'zoom'
-        resource.property(:barprop).sync
-      end
+    it 'should refuse to flush if the provider is in a failed state' do
+      subject.dirty_file!('/blor')
+      subject.failed!
+      subject.expects(:collect_resources_for_provider).never
+      resource.flush
+    end
 
-      it 'should forward provider#flush to the class' do
-        subject.expects(:flush_file).with('/blor')
+    it 'should use the provider instance method `select_file` to locate the destination file' do
+      resource.provider.expects(:select_file).returns '/blor'
+      resource.property(:barprop).value = 'zoom'
+      resource.property(:barprop).sync
+    end
+
+    it 'should trigger the class dirty_file! method' do
+      subject.expects(:dirty_file!).with('/blor')
+      resource.property(:barprop).value = 'zoom'
+      resource.property(:barprop).sync
+    end
+
+    it 'should forward provider#flush to the class' do
+      subject.expects(:flush_file).with('/blor')
+      resource.flush
+    end
+
+    describe 'and performing the flush' do
+
+      let(:newtype) { @ramtype.new('/blor') }
+      before { newtype.stubs(:backup) }
+
+      it 'should generate filetypes for new files' do
+        subject.dirty_file!('/blor')
+        @flattype.expects(:new).with('/blor').returns newtype
         resource.flush
       end
 
-      describe 'and performing the flush' do
+      it 'should use existing filetypes for existing files' do
+        stub_filetype = stub()
+        stub_filetype.expects(:backup)
+        stub_filetype.expects(:write)
+        subject.dirty_file!('/blor')
+        subject.mapped_files['/blor'][:filetype] = stub_filetype
+        resource.flush
+      end
 
-        let(:newtype) { @ramtype.new('/blor') }
-        before do
-          newtype.stubs(:backup)
-        end
+      it 'should trigger a flush on dirty files' do
+        subject.dirty_file!('/blor')
+        subject.expects(:perform_write).with('/blor', 'multiple flush')
+        resource.flush
+      end
 
-
-        it 'should generate filetypes for new files' do
-          subject.dirty_file!('/blor')
-          @flattype.expects(:new).with('/blor').returns newtype
-          resource.flush
-        end
-
-        it 'should use existing filetypes for existing files' do
-          stub_filetype = stub()
-          stub_filetype.expects(:backup)
-          stub_filetype.expects(:write)
-          subject.dirty_file!('/blor')
-          subject.mapped_files['/blor'][:filetype] = stub_filetype
-          resource.flush
-        end
-
-        it 'should trigger a flush on dirty files' do
-          subject.dirty_file!('/blor')
-          subject.expects(:perform_write).with('/blor', 'multiple flush')
-          resource.flush
-        end
-
-        it 'should not flush clean files' do
-          subject.expects(:perform_write).never
-          resource.flush
-        end
+      it 'should not flush clean files' do
+        subject.expects(:perform_write).never
+        resource.flush
       end
     end
   end
