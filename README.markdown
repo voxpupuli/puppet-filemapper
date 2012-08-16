@@ -41,7 +41,7 @@ where each hash represents {property => value} pairs.
 This is a provider instance method. It should return a string containing the
 filename that the provider should be flushed to.
 
-### `self.flush_file(filename, providers)`
+### `self.format_file(filename, providers)`
 
 This should take two values, a string containing the file name to be flushed,
 and an array of providers that should be flushed to this file. It should return
