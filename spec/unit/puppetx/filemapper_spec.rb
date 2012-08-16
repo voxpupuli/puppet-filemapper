@@ -26,6 +26,7 @@ describe PuppetX::FileMapper do
       def self.parse_file(filename, content)
         [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
       end
+      def select_file; '/foo'; end
     end
   end
 
@@ -39,6 +40,7 @@ describe PuppetX::FileMapper do
         when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
         end
       end
+      def select_file; '/blor'; end
     end
   end
 
@@ -91,6 +93,18 @@ describe PuppetX::FileMapper do
       end
 
       it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /parse_file/}
+    end
+
+    describe "and it doesn't implement #select_file" do
+      subject do
+        dummytype.provide(:incomplete) do
+          include PuppetX::FileMapper
+          def self.target_files; end
+          def self.parse_file(filename, content); end
+        end
+      end
+
+      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /select_file/}
     end
   end
 
