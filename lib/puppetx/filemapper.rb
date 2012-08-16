@@ -228,21 +228,16 @@ module PuppetX::FileMapper
     # @param [String] filename The path of the file to be flushed
     def flush_file(filename)
       if failed?
-        Puppet.error "#{self.name} is in an error state, refusing to flush file #{filename}"
+        err "#{self.name} is in an error state, refusing to flush file #{filename}"
         return
       end
 
       if @mapped_files[filename][:dirty]
-
         target_providers = collect_providers_for_file(filename)
-
         # XXX Perhaps don't raise an exception on this case.
-        if target_providers.empty?
-          raise Puppet::DevError, "#{self.name} was requested to flush file #{filename} but no provider instances are associated with it"
-        end
+        raise Puppet::DevError, "#{self.name} was requested to flush #{filename} with no provider instances" if target_providers.empty?
 
         file_contents = self.format_file(filename, target_providers)
-
         perform_write(filename, file_contents)
       else
         Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
