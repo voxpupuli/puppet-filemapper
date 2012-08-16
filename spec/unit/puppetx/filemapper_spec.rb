@@ -239,8 +239,9 @@ describe PuppetX::FileMapper do
     describe 'from absent to present' do
       it 'should mark the related file as dirty' do
         resource = dummytype.new(:name => 'boom', :barprop => 'bang')
-        subject.new(resource)
+        subject.mapped_files['/blor'][:dirty].should be_false
         resource.property(:ensure).sync
+        subject.mapped_files['/blor'][:dirty].should be_true
       end
     end
 
