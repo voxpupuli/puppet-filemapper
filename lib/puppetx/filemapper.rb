@@ -234,10 +234,8 @@ module PuppetX::FileMapper
 
       if @mapped_files[filename][:dirty]
         target_providers = collect_providers_for_file(filename)
-        # XXX Perhaps don't raise an exception on this case.
-        raise Puppet::DevError, "#{self.name} was requested to flush #{filename} with no provider instances" if target_providers.empty?
-
         file_contents = self.format_file(filename, target_providers)
+
         perform_write(filename, file_contents)
       else
         Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
