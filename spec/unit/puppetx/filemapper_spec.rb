@@ -55,6 +55,22 @@ describe PuppetX::FileMapper do
       provider = dummytype.provide(:foo) { include PuppetX::FileMapper }
       provider.should_not be_failed
     end
+
+    describe 'and is initialized' do
+      subject { multiple_file_provider.new(params_yay) }
+
+      describe 'and configures properties' do
+        it { should respond_to :barprop }
+        it { should respond_to :barprop= }
+        it { should respond_to :ensure }
+        it { should respond_to :ensure= }
+      end
+
+      describe 'and configures parameters' do
+        it { should respond_to :fooparam }
+        it { should respond_to :fooparam= }
+      end
+    end
   end
 
   describe 'when validating the class' do
