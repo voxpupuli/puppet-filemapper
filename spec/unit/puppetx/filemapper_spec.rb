@@ -191,8 +191,8 @@ describe PuppetX::FileMapper do
     end
 
     [
-      {:name => 'yay', :fooparam => :bla, :barprop => 'baz'},
-      {:name => 'whee', :fooparam => :ohai, :barprop => 'wat'},
+      {:name => 'yay', :barprop => 'baz'},
+      {:name => 'whee', :barprop => 'wat'},
     ].each do |values|
       it "should match hash values to provider properties for #{values[:name]}" do
         provs = subject.instances
@@ -205,11 +205,11 @@ describe PuppetX::FileMapper do
   describe 'when prefetching' do
     subject { multiple_file_provider }
 
-    before do
-      @provider_yay = subject.new(params_yay.merge({:provider => subject.name}))
-      @provider_whee = subject.new(params_whee.merge({:provider => subject.name}))
+    let(:provider_yay) { subject.new(params_yay.merge({:provider => subject.name})) }
+    let(:provider_whee) { subject.new(params_whee.merge({:provider => subject.name})) }
 
-      subject.stubs(:instances).returns [@provider_yay, @provider_whee]
+    before do
+      subject.stubs(:instances).returns [provider_yay, provider_whee]
     end
 
     let(:resources) do
@@ -220,8 +220,8 @@ describe PuppetX::FileMapper do
     end
 
     it "should update resources with existing providers" do
-      resources['yay'].expects(:provider=).with(@provider_yay)
-      resources['whee'].expects(:provider=).with(@provider_whee)
+      resources['yay'].expects(:provider=).with(provider_yay)
+      resources['whee'].expects(:provider=).with(provider_whee)
 
       subject.prefetch(resources)
     end
