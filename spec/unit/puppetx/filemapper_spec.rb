@@ -12,11 +12,38 @@ describe PuppetX::FileMapper do
 
   let(:dummytype) do
     Puppet::Type.newtype(:dummy) do
+      ensurable
       newparam(:name, :namevar => true)
       newparam(:fooparam)
       newproperty(:barprop)
     end
   end
+
+  let(:single_file_provider) do
+    dummytype.provide(:single) do
+      include PuppetX::FileMapper
+      def self.target_files; ['/foo']; end
+      def self.parse_file(filename, content)
+        [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
+      end
+    end
+  end
+
+  let(:multiple_file_provider) do
+    dummytype.provide(:multiple) do
+      include PuppetX::FileMapper
+      def self.target_files; ['/bar', '/baz']; end
+      def self.parse_file(filename, content)
+        case filename
+        when '/bar' then [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
+        when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
+        end
+      end
+    end
+  end
+
+  let(:params_yay)  { {:name => 'yay', :fooparam => :bla, :barprop => 'baz'} }
+  let(:params_whee) { {:name => 'whee', :fooparam => :ohai, :barprop => 'wat'} }
 
   after :each do
     dummytype.provider_hash.clear
@@ -53,17 +80,7 @@ describe PuppetX::FileMapper do
   describe 'when reading' do
     describe 'a single file' do
 
-      let(:data) { [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}] }
-
-      subject do
-        dummytype.provide(:single) do
-          include PuppetX::FileMapper
-          def self.target_files; ['/foo']; end
-          def self.parse_file(filename, content)
-            [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
-          end
-        end
-      end
+      subject { single_file_provider }
 
       it 'should generate a filetype for that file' do
         @flattype.expects(:new).with('/foo').once.returns @ramtype.new('/foo')
@@ -79,23 +96,12 @@ describe PuppetX::FileMapper do
 
       it 'should return the generated array' do
         @flattype.stubs(:new).with('/foo').once.returns @ramtype.new('/foo')
-        subject.load_all_providers_from_disk.should == data
+        subject.load_all_providers_from_disk.should == [params_yay]
       end
     end
 
     describe 'multiple files' do
-      subject do
-        dummytype.provide(:multiple) do
-          include PuppetX::FileMapper
-          def self.target_files; ['/bar', '/baz']; end
-          def self.parse_file(filename, content)
-            case filename
-            when '/bar' then [{:name => 'yay', :fooparam => :bla, :barprop => 'baz'}]
-            when '/baz' then [{:name => 'whee', :fooparam => :ohai, :barprop => 'wat'}]
-            end
-          end
-        end
-      end
+      subject { multiple_file_provider }
 
       it 'should generate a filetype for each file' do
         @flattype.expects(:new).with('/bar').once.returns(stub(:read => 'barbar'))
@@ -117,8 +123,8 @@ describe PuppetX::FileMapper do
 
         it 'should return the generated array' do
           data = subject.load_all_providers_from_disk
-          data.should be_include({:name => 'yay', :fooparam => :bla, :barprop => 'baz'})
-          data.should be_include({:name => 'whee', :fooparam => :ohai, :barprop => 'wat'})
+          data.should be_include(params_yay)
+          data.should be_include(params_whee)
         end
       end
     end
