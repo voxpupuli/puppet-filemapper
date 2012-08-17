@@ -9,13 +9,15 @@ Map files to resources and back with this handy dandy mixin!
 Description
 -----------
 
-A common challenge in Puppet is managing a set of resources in files to Puppet
-resources. The ParsedFile provider can handle some of these cases, but it has
-limitations. If the files are not record based, it's very difficult to use
-existing constructs to parse the file.
+Things that are harder than they should be:
+
+  * Acquiring a pet monkey
+  * Getting anywhere in Los Angeles
+  * Understanding the ParsedFile provider
+  * Writing Puppet providers that directly manipulate files
 
 The solution for this is to completely bypass parsing in any sort of base
-provider, and hand that over entirely to the including/inheriting class.
+provider, and delegate the role of parsing and generating to including classes.
 
 You figure out how to parse and write the file, and this will do the rest.
 
