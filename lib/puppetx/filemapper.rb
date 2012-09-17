@@ -50,7 +50,7 @@ module PuppetX::FileMapper
 
   def self.included(klass)
     klass.extend PuppetX::FileMapper::ClassMethods
-    klass.mk_resource_methods
+    klass.mk_property_methods
     klass.initvars
   end
 
@@ -186,10 +186,8 @@ module PuppetX::FileMapper
       end
     end
 
-    # Generate attr_accessors for the properties, and have them mark the file
-    # as modified if an attr_writer is called.
-    # This is basically ripped off from ParsedFile
-    def mk_resource_methods
+    # Create attr_accessors for properties and mark the provider as dirty on change.
+    def mk_property_methods
       resource_type.validproperties.each do |attr|
         attr = symbolize(attr)
 
