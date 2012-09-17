@@ -128,6 +128,19 @@ module PuppetX::FileMapper
     #   being a hash containg the state of the file and the filetype associated
     #   with it.
     #
+    # @example
+    #   IncludingProvider.load_all_providers_from_disk
+    #   # => [
+    #   #   { "/path/to/file" => {
+    #   #     :dirty    => false,
+    #   #     :filetype => #<Puppet::Util::FileTypeFlat:0x007fbf5b05ff10>,
+    #   #   },
+    #   #   { "/path/to/another/file" => {
+    #   #     :dirty    => false,
+    #   #     :filetype => #<Puppet::Util::FileTypeFlat:0x007fbf5b05c108,
+    #   #   },
+    #   #
+    #
     def load_all_providers_from_disk
       validate_class!
 
