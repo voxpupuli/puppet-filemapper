@@ -6,6 +6,8 @@ Synopsis
 
 Map files to resources and back with this handy dandy mixin!
 
+Documentation is available at [http://adrienthebo.github.com/puppet-filemapper/](http://adrienthebo.github.com/puppet-filemapper/)
+
 Description
 -----------
 
