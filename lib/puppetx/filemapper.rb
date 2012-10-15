@@ -189,7 +189,7 @@ module PuppetX::FileMapper
     # Create attr_accessors for properties and mark the provider as dirty on change.
     def mk_property_methods
       resource_type.validproperties.each do |attr|
-        attr = symbolize(attr)
+        attr = attr.intern if attr.respond_to? :intern and not attr.is_a? Symbol
 
         # Generate the attr_reader method
         define_method(attr) do
