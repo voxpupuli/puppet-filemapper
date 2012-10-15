@@ -180,6 +180,22 @@ describe PuppetX::FileMapper do
         end
       end
     end
+
+    describe 'validating input' do
+      subject { multiple_file_provider }
+
+      before do
+        @flattype.stubs(:new).with('/bar').once.returns(stub(:read => 'barbar'))
+        @flattype.stubs(:new).with('/baz').once.returns(stub(:read => 'bazbaz'))
+      end
+
+      it 'should ensure that retrieved values are in the right format' do
+        subject.stubs(:parse_file).with('/bar', 'barbar').returns Hash.new
+        subject.stubs(:parse_file).with('/baz', 'bazbaz').returns Hash.new
+
+        expect { subject.load_all_providers_from_disk }.to raise_error Puppet::DevError, /expected.*to return an Array, got a Hash/
+      end
+    end
   end
 
   describe 'when generating instances' do

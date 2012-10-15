@@ -155,6 +155,9 @@ module PuppetX::FileMapper
       provider_hashes = []
       @mapped_files.each_pair do |filename, file_attrs|
         arr = parse_file(filename, file_attrs[:filetype].read)
+        unless arr.is_a? Array
+          raise Puppet::DevError, "expected #{self}.parse_file to return an Array, got a #{arr.class}"
+        end
         provider_hashes.concat arr
       end
 
