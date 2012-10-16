@@ -1,0 +1,11 @@
+CHANGELOG
+=========
+
+1.0.1
+-----
+
+This is a backwards compatible maintenance release.
+
+  * Remove call `#symbolize` method; said method was removed in Puppet 3.0.0
+  * Fail fast if an including class returns bad data from Provider.parse_file
+  * Don't try to fall back to `@resource.should` value for properties
