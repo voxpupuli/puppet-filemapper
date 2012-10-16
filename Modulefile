@@ -1,5 +1,5 @@
 name    'adrienthebo-filemapper'
-version '1.0.0'
+version '1.0.1'
 author  'Adrien Thebo <adrien@somethingsinistral.net>'
 license 'Apache 2.0'
 
