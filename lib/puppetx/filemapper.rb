@@ -237,13 +237,17 @@ module PuppetX::FileMapper
         return
       end
 
-      if @mapped_files[filename][:dirty]
+      if not @mapped_files[filename][:dirty]
+        Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
+      else
         target_providers = collect_providers_for_file(filename)
         file_contents = self.format_file(filename, target_providers)
 
-        perform_write(filename, file_contents)
-      else
-        Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
+        if file_contents.is_a? String
+          perform_write(filename, file_contents)
+        else
+          raise Puppet::DevError, "expected #{self}.file_file to return a String, got a #{file_contents.class}"
+        end
       end
     rescue => e
       # If something failed during the flush process, mark the provider as

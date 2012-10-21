@@ -391,6 +391,18 @@ describe PuppetX::FileMapper do
         resource.flush
       end
     end
+
+    describe 'validating the file contents to flush' do
+      before do
+        subject.stubs(:format_file).returns %w{invalid data}
+        subject.dirty_file!('/blor')
+      end
+
+      it 'should raise an error if given an invalid value for file contents' do
+        subject.expects(:perform_write).with('/blor', %w{invalid data}).never
+        expect { subject.flush_file('/blor') }.to raise_error Puppet::DevError, /expected .* to return a String, got a Array/
+      end
+    end
   end
 
   describe 'when formatting resources for flushing' do
