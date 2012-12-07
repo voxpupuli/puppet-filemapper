@@ -2,11 +2,11 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
 <title>
   File: README
   
-    &mdash; Documentation by YARD 0.8.2.1
+    &mdash; Documentation by YARD 0.8.3
   
 </title>
 
@@ -61,21 +61,23 @@
 
     <iframe id="search_frame"></iframe>
 
-    <div id="content"><div id='filecontents'><h1 id="puppet-filemapper">Puppet FileMapper</h1>
+    <div id="content"><div id='filecontents'><h1>Puppet FileMapper</h1>
 
-<h2 id="synopsis">Synopsis</h2>
+<h2>Synopsis</h2>
 
 <p>Map files to resources and back with this handy dandy mixin!</p>
 
-<h2 id="description">Description</h2>
+<p>Documentation is available at <a href="http://adrienthebo.github.com/puppet-filemapper/">http://adrienthebo.github.com/puppet-filemapper/</a></p>
+
+<h2>Description</h2>
 
 <p>Things that are harder than they should be:</p>
 
 <ul>
-  <li>Acquiring a pet monkey</li>
-  <li>Getting anywhere in Los Angeles</li>
-  <li>Understanding the ParsedFile provider</li>
-  <li>Writing Puppet providers that directly manipulate files</li>
+<li>Acquiring a pet monkey</li>
+<li>Getting anywhere in Los Angeles</li>
+<li>Understanding the ParsedFile provider</li>
+<li>Writing Puppet providers that directly manipulate files</li>
 </ul>
 
 <p>The solution for this is to completely bypass parsing in any sort of base
@@ -83,7 +85,7 @@ provider, and delegate the role of parsing and generating to including classes.<
 
 <p>You figure out how to parse and write the file, and this will do the rest.</p>
 
-<h2 id="the-backstory">The Backstory</h2>
+<h2>The Backstory</h2>
 
 <p>Managing Unix-ish systems generally means dealing with one of two things:</p>
 
@@ -94,54 +96,54 @@ provider, and delegate the role of parsing and generating to including classes.<
 the file manipulation layer has been lacking. The long-standing approach for
 manipulating files has been to select one of the following, and hope for the best.</p>
 
-<h3 id="shipping-flat-files-to-the-client">Shipping flat files to the client</h3>
+<h3>Shipping flat files to the client</h3>
 
 <p>Using the <code>File</code> resource to ship flat files is a really common solution, and
-it’s very easy. It also has the finesse of a brick thrown through a window.
+it&#39;s very easy. It also has the finesse of a brick thrown through a window.
 There is very little customizability here, aside from the array notation for
 <a href="http://docs.puppetlabs.com/references/latest/type.html#file">specifying the <code>source</code> field</a>.</p>
 
-<h3 id="using-erb-templates-to-customize-files">Using ERB templates to customize files</h3>
+<h3>Using ERB templates to customize files</h3>
 
 <p>The File resource can also take a content field, to which you can pass the
 output of a template. This allows more sophistication, but not much. It also
 adds more of a burden to your master; template rendering happens on the master
-and if you’re doing really crazy number crunching then this pain will be
+and if you&#39;re doing really crazy number crunching then this pain will be
 centralized.</p>
 
-<h3 id="using-augeas">Using Augeas</h3>
+<h3>Using Augeas</h3>
 
 <p>Augeas is a very powerful tool that allows you to manipulate files, and the
 <code>Augeas</code> type allows you to harness this inside of Puppet. However, it has a
 rather byzantine syntax, and is dependent on lenses being available.</p>
 
-<h3 id="sed">Sed</h3>
+<h3>Sed</h3>
 
 <p>I personally love sed, but sed a file configuration management tool is not.</p>
 
-<h3 id="using-the-parsedfile-provider">Using the ParsedFile provider</h3>
+<h3>Using the ParsedFile provider</h3>
 
 <p>Puppet has a provider extension called the <a href="https://github.com/puppetlabs/puppet/blob/2.7.19/lib/puppet/provider/parsedfile.rb" title="Puppet 2.7.19 - ParsedFile provider">ParsedFile provider</a>
-that’s used to manipulate text like crontabs and so forth. It also uses a number
-of advanced features in puppet, which makes it quite powerful. However, it’s
+that&#39;s used to manipulate text like crontabs and so forth. It also uses a number
+of advanced features in puppet, which makes it quite powerful. However, it&#39;s
 incredibly complex, tightly coupled with the FileParsing utility language, has
 tons of obscure and undocumented hooks that are the only way to do complex
 operations, and is entirely record based which makes it unsuitable for managing
 files that have complex structure. While it has basic support for managing
 multiple files, <em>basic</em> is the indicative word.</p>
 
-<hr />
+<hr>
 
-<p>The Filemapper extension has been designed as a simpler, lower level alternative
+<p>The Filemapper extension has been designed as a lower level alternative
 to the ParsedFile.</p>
 
-<h2 id="how-it-works">How it works</h2>
+<h2>How it works</h2>
 
 <p>The Filemapper extension takes advantage of hooks within the
 <a href="http://somethingsinistral.net/blog/reading-puppet-the-transaction/">Transaction</a> to reduce the number of reads and writes needed to
 perform operations.</p>
 
-<h3 id="prefetching">prefetching</h3>
+<h3>prefetching</h3>
 
 <p>When a catalog is being applied, providers can define the <code>prefetch</code> method to
 load all resources before runtime. The Filemapper extension uses this method to
@@ -149,9 +151,9 @@ preemptively read all files that the provider requires, and generates and stores
 the state of the requested resources. This means that if you have a few thousand
 resources in 20 files, you only need to do 20 reads for the entire Puppet run.</p>
 
-<h3 id="post-evaluation-flushing">post-evaluation flushing</h3>
+<h3>post-evaluation flushing</h3>
 
-<p>When resources are normally evaluated, each time a property is synchronized it’s
+<p>When resources are normally evaluated, each time a property is synchronized it&#39;s
 expected that an action will be run right then. The Filemapper extension instead
 records all the requested changes and defers operating on them. When the
 resource is finished, it will be flushed, at which time all of the requested
@@ -162,34 +164,34 @@ out of sync, the file will be untouched.</p>
 <p>To ensure that the system state matches what Puppet thinks is going on, any file
 that has changed resources will be re-written after each resource is flushed.
 That means that if you have 20 resources out of sync, that file will have to be
-written 20 times. While it’s technically possible to write the file in a single
+written 20 times. While it&#39;s technically possible to write the file in a single
 pass, this means that some resources will be applied either early or late, which
 utterly smashes POLA.</p>
 
-<h3 id="use-on-the-command-line">Use on the command line</h3>
+<h3>Use on the command line</h3>
 
 <p>The Filemapper extension implements the <code>instances</code> method, which means that you
 can use the <code>puppet resource</code> command to interact with the associated provider
 without having to perform a full blown Puppet run.</p>
 
-<h3 id="selecting-files-to-load">Selecting files to load</h3>
+<h3>Selecting files to load</h3>
 
 <p>In order to provide prefetching and <code>puppet resource</code> in a clean manner, the
 Filemapper extension has to have a full list of what files to read. Implementing
 classes need to implement the <code>target_files</code> method which returns a list of
 files to read. The implementation is entirely up to the implementing class; it
-can return a single file every time, such as “/etc/inittab”, or it can generate
-that information on the fly, by returning <code>Dir["/etc/sysconfig/network/ifcfg-*"]</code>.
+can return a single file every time, such as &quot;/etc/inittab&quot;, or it can generate
+that information on the fly, by returning <code>Dir[&quot;/etc/sysconfig/network/ifcfg-*&quot;]</code>.
 Basically, files that will be used as a source of data can be as complex or
 simple as you need.</p>
 
-<h3 id="writing-back-files">Writing back files</h3>
+<h3>Writing back files</h3>
 
 <p>In a similar vein, resources can be written back to files in whatever method you
 need. Implementing classes need to implement the <em>instance method</em> <code>#select_file</code>
 so that when that resource is changed, the correct file is modified.</p>
 
-<h3 id="parsing">Parsing</h3>
+<h3>Parsing</h3>
 
 <p>When parsing a file, the implementing class needs to implement the <code>parse_file</code>
 method. It will get the name of the file being parsed as well as the contents.
@@ -197,7 +199,7 @@ It can parse this file in whatever manner needed, and should return an array of
 any provider instances generated. If the file only contains a single provider
 instance, then just wrap that instance in an array.</p>
 
-<h3 id="writing">Writing</h3>
+<h3>Writing</h3>
 
 <p>Whenever a file is marked as dirty, that is a resource associated with that file
 has changed, the <code>format_file</code> method will be called. The implementing class
@@ -207,15 +209,15 @@ determine how that file should be written to disk and then return the contents.
 This can be as complex as needed.</p>
 
 <p>Under no conditions should implementing classes modify any files directly. No,
-seriously, don’t do it. The Filemapper extension uses the built in methods for
+seriously, don&#39;t do it. The Filemapper extension uses the built in methods for
 modifying files, which will back up changed files to the filebucket. This is for
 your own safety, so if you bypass this then you are on your own.</p>
 
-<h3 id="storing-state-outside-of-resources">Storing state outside of resources</h3>
+<h3>Storing state outside of resources</h3>
 
-<p>It’s more or less expected that there will be no state outside of the provider
+<p>It&#39;s more or less expected that there will be no state outside of the provider
 instances, but there are plenty of cases where this could be the case. For
-instance, if one wanted to preserve the comments in a file but didn’t directly
+instance, if one wanted to preserve the comments in a file but didn&#39;t directly
 associate them with resource attributes, the <code>parse_file</code> method can store data
 in an instance variable, such as <code>@comments = my_list_of_comments</code>. When
 formatting the file, the implementing class can read the <code>@comments</code> variable
@@ -227,56 +229,81 @@ around to maintain more complex state.</p>
 <p>Using this sort of operation of reading outside state, you can theoretically
 have multiple Filemapper extensions that work on shared files. By communicating
 the state between them, you can manage multiple different resources in one file.
-<strong>HOWEVER</strong>, this will require careful communication, so don’t take this sort of
-thing lightly. However, I don’t thing that anything else in Puppet can provide
+<strong>HOWEVER</strong>, this will require careful communication, so don&#39;t take this sort of
+thing lightly. However, I don&#39;t thing that anything else in Puppet can provide
 this sort of behavior. YMMV.</p>
 
-<h3 id="why-a-mixin">Why a mixin?</h3>
+<h3>Why a mixin?</h3>
 
 <p>While the ParsedFile provider is supposed to be inherited, this class is a mixin
 and needs to be included. This is done because the Filemapper extension only
-<em>adds</em> behavior, and isn’t really an object or entity in its own right. This way
+<em>adds</em> behavior, and isn&#39;t really an object or entity in its own right. This way
 you can use the Filemapper extension while inheriting from something like the
 Puppet::Provider::Package provider.</p>
 
-<h2 id="synopsis-of-implementation-requirements">Synopsis of implementation requirements</h2>
+<h2>Synopsis of implementation requirements</h2>
 
 <p>Providers using the Filemapper extension need to implement the following
 methods.</p>
 
-<h3 id="selftargetfiles"><code>self.target_files</code></h3>
+<h3><code>self.target_files</code></h3>
 
 <p>This should return an array of filenames specifying which files should be
 prefetched.</p>
 
-<h3 id="selfparsefilefilename-filecontents"><code>self.parse_file(filename, file_contents)</code></h3>
+<h3><code>self.parse_file(filename, file_contents)</code></h3>
 
 <p>This should take two values, a string containing the file name, and a string
 containing the contents of the file. It should return an array of hashes,
 where each hash represents =&gt; value pairs.</p>
 
-<h3 id="selectfile"><code>select_file</code></h3>
+<h3><code>select_file</code></h3>
 
 <p>This is a provider instance method. It should return a string containing the
 filename that the provider should be flushed to.</p>
 
-<h3 id="selfformatfilefilename-providers"><code>self.format_file(filename, providers)</code></h3>
+<h3><code>self.format_file(filename, providers)</code></h3>
 
 <p>This should take two values, a string containing the file name to be flushed,
 and an array of providers that should be flushed to this file. It should return
 a string containing the contents of the file to be written.</p>
 
-<h2 id="examples">Examples</h2>
+<h2>Synopsis of optional implementation hooks</h2>
 
-<p>The filemapper extension was largely extracted out of the [‘puppet-network’]
+<h3><code>self.pre_flush_hook(filename)</code> and <code>self.post_flush_hook(filename)</code></h3>
+
+<p>These methods can be implemented to add behavior right before and right after
+filesystem operations. Both methods take a single argument, a string
+containing the name of the file to be flushed.</p>
+
+<p>If <code>self.pre_flush_hook</code> raises an exception, the flush will not occur and the
+provider will be marked as failed and will refuse to perform any more flushes.
+If some sort of critical error occured, this can force the provider to error
+out before it starts stomping on files.</p>
+
+<p><code>self.post_flush_hook</code> is guaranteed to run after any filesystem operations
+occur. This can be used for recovery if something goes wrong during the flush.
+If this method raises an exception, the provider will be makred as failed and
+will refuse to perform any more flushes.</p>
+
+<h2>Removing empty files</h2>
+
+<p>If a file is empty, it&#39;s often reasonable to just delete it. The Filemapper
+mixin implements <code>attr_accessor :unlink_empty_files</code>. If that value is set to
+true, then if <code>self.format_file</code> returns the empty string then the file will be
+deleted from the file system.</p>
+
+<h2>Examples</h2>
+
+<p>The filemapper extension was largely extracted out of the [&#39;puppet-network&#39;]
 module. That code base should display the weird edge cases that this extension
 handles.</p>
 </div></div>
 
     <div id="footer">
-  Generated on Sun Sep 30 15:16:24 2012 by
+  Generated on Thu Dec  6 22:14:00 2012 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.2.1 (ruby-1.9.3).
+  0.8.3 (ruby-1.9.3).
 </div>
 
   </body>
