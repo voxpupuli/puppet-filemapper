@@ -47,7 +47,7 @@ describe PuppetX::FileMapper do
         end
       end
       def select_file; '/multiple/file/provider-flush'; end
-      def self.format_file(filename, providers); 'multiple flush'; end
+      def self.format_file(filename, providers); 'multiple flush content'; end
     end
   end
 
@@ -387,7 +387,7 @@ describe PuppetX::FileMapper do
 
     it 'should trigger a flush on dirty files' do
       subject.dirty_file!('/multiple/file/provider-flush')
-      subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush')
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush content')
       resource.flush
     end
 
@@ -485,6 +485,37 @@ describe PuppetX::FileMapper do
     end
   end
 
+  describe 'flush hooks' do
+
+    subject { multiple_file_provider }
+
+    before :each do
+      subject.dirty_file!('/multiple/file/provider-flush')
+    end
+
+    let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
+
+    it 'should be called in order' do
+      seq = sequence('flush')
+      subject.expects(:respond_to?).with(:pre_flush_hook).returns true
+      subject.expects(:respond_to?).with(:post_flush_hook).returns true
+      subject.expects(:pre_flush_hook).with('/multiple/file/provider-flush').in_sequence(seq)
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush content').in_sequence(seq)
+      subject.expects(:post_flush_hook).with('/multiple/file/provider-flush').in_sequence(seq)
+
+      subject.flush_file '/multiple/file/provider-flush'
+    end
+
+    it 'should call post_flush_hook even if an exception is raised' do
+      subject.stubs(:respond_to?).with(:pre_flush_hook).returns false
+      subject.stubs(:respond_to?).with(:post_flush_hook).returns true
+
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush content').raises RuntimeError
+      subject.expects(:post_flush_hook)
+
+      expect { subject.flush_file '/multiple/file/provider-flush' }.to raise_error RuntimeError
+    end
+  end
 
   describe 'when formatting resources for flushing' do
     let(:provider_class) { multiple_file_provider }

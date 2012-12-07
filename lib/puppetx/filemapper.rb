@@ -232,10 +232,14 @@ module PuppetX::FileMapper
       @mapped_files[filename][:dirty] = true
     end
 
-    # Flush all providers associated with the given file to disk.
+    # Flush provider instances associated with the given file and call any defined hooks
     #
     # If the provider is in a failure state, the provider class will refuse to
     # flush any file, since we're in an unknown state.
+    #
+    # This method respects two method hooks: `pre_flush_hook` and `post_flush_hook`.
+    # These methods must accept one argument, the path of the file being flushed.
+    # `post_flush_hook` is guaranteed to be called after the flush has occurred.
     #
     # @param [String] filename The path of the file to be flushed
     def flush_file(filename)
@@ -256,10 +260,17 @@ module PuppetX::FileMapper
           raise Puppet::DevError, "expected #{self}.format_file to return a String, got a #{file_contents.class}"
         end
 
-        if file_contents.empty? and self.unlink_empty_files
-          remove_empty_file(filename)
-        else
-          perform_write(filename, file_contents)
+        # Call the `pre_flush_hook` method if it's defined
+        pre_flush_hook(filename) if self.respond_to? :pre_flush_hook
+
+        begin
+          if file_contents.empty? and self.unlink_empty_files
+            remove_empty_file(filename)
+          else
+            perform_write(filename, file_contents)
+          end
+        ensure
+          post_flush_hook(filename) if self.respond_to? :post_flush_hook
         end
       end
     rescue => e
