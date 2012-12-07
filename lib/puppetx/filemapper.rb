@@ -246,7 +246,7 @@ module PuppetX::FileMapper
         if file_contents.is_a? String
           perform_write(filename, file_contents)
         else
-          raise Puppet::DevError, "expected #{self}.file_file to return a String, got a #{file_contents.class}"
+          raise Puppet::DevError, "expected #{self}.format_file to return a String, got a #{file_contents.class}"
         end
       end
     rescue => e
