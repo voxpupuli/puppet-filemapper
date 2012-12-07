@@ -75,7 +75,7 @@ multiple files, *basic* is the indicative word.
 
 - - -
 
-The Filemapper extension has been designed as a simpler, lower level alternative
+The Filemapper extension has been designed as a lower level alternative
 to the ParsedFile.
 
 How it works
@@ -212,6 +212,25 @@ filename that the provider should be flushed to.
 This should take two values, a string containing the file name to be flushed,
 and an array of providers that should be flushed to this file. It should return
 a string containing the contents of the file to be written.
+
+Synopsis of optional implementation hooks
+-----------------------------------------
+
+### `self.pre_flush_hook(filename)` and `self.post_flush_hook(filename)`
+
+These methods can be implemented to add behavior right before and right after
+filesystem operations. Both methods take a single argument, a string
+containing the name of the file to be flushed.
+
+If `self.pre_flush_hook` raises an exception, the flush will not occur and the
+provider will be marked as failed and will refuse to perform any more flushes.
+If some sort of critical error occured, this can force the provider to error
+out before it starts stomping on files.
+
+`self.post_flush_hook` is guaranteed to run after any filesystem operations
+occur. This can be used for recovery if something goes wrong during the flush.
+If this method raises an exception, the provider will be makred as failed and
+will refuse to perform any more flushes.
 
 Examples
 --------
