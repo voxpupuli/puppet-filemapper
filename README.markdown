@@ -232,6 +232,14 @@ occur. This can be used for recovery if something goes wrong during the flush.
 If this method raises an exception, the provider will be makred as failed and
 will refuse to perform any more flushes.
 
+Removing empty files
+--------------------
+
+If a file is empty, it's often reasonable to just delete it. The Filemapper
+mixin implements `attr_accessor :unlink_empty_files`. If that value is set to
+true, then if `self.format_file` returns the empty string then the file will be
+deleted from the file system.
+
 Examples
 --------
 
