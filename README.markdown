@@ -23,60 +23,60 @@ provider, and delegate the role of parsing and generating to including classes.
 
 You figure out how to parse and write the file, and this will do the rest.
 
-The Backstory
--------------
+Synopsis of implementation requirements
+---------------------------------------
 
-Managing Unix-ish systems generally means dealing with one of two things:
+Providers using the Filemapper extension need to implement the following
+methods.
 
-  1. Processes - starting them, stopping them, monitoring them, etc.
-  1. Files - Creating them, editing, deleting them, specifying permissions, etc.
+### `self.target_files`
 
-Puppet has pretty good support in the provider layer for running commands, but
-the file manipulation layer has been lacking. The long-standing approach for
-manipulating files has been to select one of the following, and hope for the best.
+This should return an array of filenames specifying which files should be
+prefetched.
 
-### Shipping flat files to the client
+### `self.parse_file(filename, file_contents)`
 
-Using the `File` resource to ship flat files is a really common solution, and
-it's very easy. It also has the finesse of a brick thrown through a window.
-There is very little customizability here, aside from the array notation for
-[specifying the `source` field](http://docs.puppetlabs.com/references/latest/type.html#file).
+This should take two values, a string containing the file name, and a string
+containing the contents of the file. It should return an array of hashes,
+where each hash represents {property => value} pairs.
 
-### Using ERB templates to customize files
+### `select_file`
 
-The File resource can also take a content field, to which you can pass the
-output of a template. This allows more sophistication, but not much. It also
-adds more of a burden to your master; template rendering happens on the master
-and if you're doing really crazy number crunching then this pain will be
-centralized.
+This is a provider instance method. It should return a string containing the
+filename that the provider should be flushed to.
 
-### Using Augeas
+### `self.format_file(filename, providers)`
 
-Augeas is a very powerful tool that allows you to manipulate files, and the
-`Augeas` type allows you to harness this inside of Puppet. However, it has a
-rather byzantine syntax, and is dependent on lenses being available.
+This should take two values, a string containing the file name to be flushed,
+and an array of providers that should be flushed to this file. It should return
+a string containing the contents of the file to be written.
 
-### Sed
+Synopsis of optional implementation hooks
+-----------------------------------------
 
-I personally love sed, but sed a file configuration management tool is not.
+### `self.pre_flush_hook(filename)` and `self.post_flush_hook(filename)`
 
-### Using the ParsedFile provider
+These methods can be implemented to add behavior right before and right after
+filesystem operations. Both methods take a single argument, a string
+containing the name of the file to be flushed.
 
-[parsedfile]: https://github.com/puppetlabs/puppet/blob/2.7.19/lib/puppet/provider/parsedfile.rb "Puppet 2.7.19 - ParsedFile provider"
+If `self.pre_flush_hook` raises an exception, the flush will not occur and the
+provider will be marked as failed and will refuse to perform any more flushes.
+If some sort of critical error occured, this can force the provider to error
+out before it starts stomping on files.
 
-Puppet has a provider extension called the [ParsedFile provider][parsedfile]
-that's used to manipulate text like crontabs and so forth. It also uses a number
-of advanced features in puppet, which makes it quite powerful. However, it's
-incredibly complex, tightly coupled with the FileParsing utility language, has
-tons of obscure and undocumented hooks that are the only way to do complex
-operations, and is entirely record based which makes it unsuitable for managing
-files that have complex structure. While it has basic support for managing
-multiple files, *basic* is the indicative word.
+`self.post_flush_hook` is guaranteed to run after any filesystem operations
+occur. This can be used for recovery if something goes wrong during the flush.
+If this method raises an exception, the provider will be makred as failed and
+will refuse to perform any more flushes.
 
-- - -
+Removing empty files
+--------------------
 
-The Filemapper extension has been designed as a lower level alternative
-to the ParsedFile.
+If a file is empty, it's often reasonable to just delete it. The Filemapper
+mixin implements `attr_accessor :unlink_empty_files`. If that value is set to
+true, then if `self.format_file` returns the empty string then the file will be
+deleted from the file system.
 
 How it works
 ------------
@@ -185,60 +185,60 @@ and needs to be included. This is done because the Filemapper extension only
 you can use the Filemapper extension while inheriting from something like the
 Puppet::Provider::Package provider.
 
-Synopsis of implementation requirements
----------------------------------------
+The Backstory
+-------------
 
-Providers using the Filemapper extension need to implement the following
-methods.
+Managing Unix-ish systems generally means dealing with one of two things:
 
-### `self.target_files`
+  1. Processes - starting them, stopping them, monitoring them, etc.
+  1. Files - Creating them, editing, deleting them, specifying permissions, etc.
 
-This should return an array of filenames specifying which files should be
-prefetched.
+Puppet has pretty good support in the provider layer for running commands, but
+the file manipulation layer has been lacking. The long-standing approach for
+manipulating files has been to select one of the following, and hope for the best.
 
-### `self.parse_file(filename, file_contents)`
+### Shipping flat files to the client
 
-This should take two values, a string containing the file name, and a string
-containing the contents of the file. It should return an array of hashes,
-where each hash represents {property => value} pairs.
+Using the `File` resource to ship flat files is a really common solution, and
+it's very easy. It also has the finesse of a brick thrown through a window.
+There is very little customizability here, aside from the array notation for
+[specifying the `source` field](http://docs.puppetlabs.com/references/latest/type.html#file).
 
-### `select_file`
+### Using ERB templates to customize files
 
-This is a provider instance method. It should return a string containing the
-filename that the provider should be flushed to.
+The File resource can also take a content field, to which you can pass the
+output of a template. This allows more sophistication, but not much. It also
+adds more of a burden to your master; template rendering happens on the master
+and if you're doing really crazy number crunching then this pain will be
+centralized.
 
-### `self.format_file(filename, providers)`
+### Using Augeas
 
-This should take two values, a string containing the file name to be flushed,
-and an array of providers that should be flushed to this file. It should return
-a string containing the contents of the file to be written.
+Augeas is a very powerful tool that allows you to manipulate files, and the
+`Augeas` type allows you to harness this inside of Puppet. However, it has a
+rather byzantine syntax, and is dependent on lenses being available.
 
-Synopsis of optional implementation hooks
------------------------------------------
+### Sed
 
-### `self.pre_flush_hook(filename)` and `self.post_flush_hook(filename)`
+I personally love sed, but sed a file configuration management tool is not.
 
-These methods can be implemented to add behavior right before and right after
-filesystem operations. Both methods take a single argument, a string
-containing the name of the file to be flushed.
+### Using the ParsedFile provider
 
-If `self.pre_flush_hook` raises an exception, the flush will not occur and the
-provider will be marked as failed and will refuse to perform any more flushes.
-If some sort of critical error occured, this can force the provider to error
-out before it starts stomping on files.
+[parsedfile]: https://github.com/puppetlabs/puppet/blob/2.7.19/lib/puppet/provider/parsedfile.rb "Puppet 2.7.19 - ParsedFile provider"
 
-`self.post_flush_hook` is guaranteed to run after any filesystem operations
-occur. This can be used for recovery if something goes wrong during the flush.
-If this method raises an exception, the provider will be makred as failed and
-will refuse to perform any more flushes.
+Puppet has a provider extension called the [ParsedFile provider][parsedfile]
+that's used to manipulate text like crontabs and so forth. It also uses a number
+of advanced features in puppet, which makes it quite powerful. However, it's
+incredibly complex, tightly coupled with the FileParsing utility language, has
+tons of obscure and undocumented hooks that are the only way to do complex
+operations, and is entirely record based which makes it unsuitable for managing
+files that have complex structure. While it has basic support for managing
+multiple files, *basic* is the indicative word.
 
-Removing empty files
---------------------
+- - -
 
-If a file is empty, it's often reasonable to just delete it. The Filemapper
-mixin implements `attr_accessor :unlink_empty_files`. If that value is set to
-true, then if `self.format_file` returns the empty string then the file will be
-deleted from the file system.
+The Filemapper extension has been designed as a lower level alternative
+to the ParsedFile.
 
 Examples
 --------
