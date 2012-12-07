@@ -243,6 +243,8 @@ to the ParsedFile.
 Examples
 --------
 
-The filemapper extension was largely extracted out of the ['puppet-network']
+[puppet-network]: https://github.com/adrienthebo/puppet-network
+
+The filemapper extension was largely extracted out of the [puppet-network][puppet-network]
 module. That code base should display the weird edge cases that this extension
 handles.
