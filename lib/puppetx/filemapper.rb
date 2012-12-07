@@ -56,10 +56,17 @@ module PuppetX::FileMapper
 
   module ClassMethods
 
+    # @!attribute [rw] unlink_empty_files
+    #   @return [TrueClass || FalseClass] Whether empty files will be removed
+    attr_accessor :unlink_empty_files
+
+    # @!attribute [r] mapped_files
+    #   @return [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
+    #     A data structure representing the file paths and filetypes backing this
+    #     provider.
     attr_reader :mapped_files
 
     def initvars
-      # Mapped_files: [Hash<filepath => Hash<:dirty => Bool, :filetype => Filetype>>]
       @mapped_files = Hash.new {|h, k| h[k] = {}}
       @failed       = false
       @all_providers = []
@@ -240,13 +247,19 @@ module PuppetX::FileMapper
       if not @mapped_files[filename][:dirty]
         Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
       else
+        # Collect all providers that should be present and pass them to the
+        # including class for formatting.
         target_providers = collect_providers_for_file(filename)
         file_contents = self.format_file(filename, target_providers)
 
-        if file_contents.is_a? String
-          perform_write(filename, file_contents)
-        else
+        unless file_contents.is_a? String
           raise Puppet::DevError, "expected #{self}.format_file to return a String, got a #{file_contents.class}"
+        end
+
+        if file_contents.empty? and self.unlink_empty_files
+          remove_empty_file(filename)
+        else
+          perform_write(filename, file_contents)
         end
       end
     rescue => e
@@ -267,6 +280,20 @@ module PuppetX::FileMapper
 
       filetype.backup
       filetype.write(contents)
+    end
+
+    # Back up and remove a file, if it exists
+    #
+    # @param [String] filename The file to remove
+    def remove_empty_file(filename)
+      if File.exist? filename
+        @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(:flat).new(filename)
+        filetype = @mapped_files[filename][:filetype]
+
+        filetype.backup
+
+        File.unlink(filename)
+      end
     end
   end
 end

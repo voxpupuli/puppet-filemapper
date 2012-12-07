@@ -403,7 +403,79 @@ describe PuppetX::FileMapper do
         expect { subject.flush_file('/blor') }.to raise_error Puppet::DevError, /expected .* to return a String, got a Array/
       end
     end
+
+    describe 'and "unlink_empty_files" is true' do
+      let(:newtype) { @ramtype.new('/blor') }
+
+      before do
+        subject.unlink_empty_files = true
+        newtype.stubs(:backup)
+        File.stubs(:unlink)
+      end
+
+      describe 'with empty file contents' do
+        before do
+          subject.dirty_file!('/blor')
+          @flattype.stubs(:new).with('/blor').returns newtype
+          File.stubs(:exist?).with('/blor').returns true
+
+          subject.stubs(:format_file).returns ''
+        end
+
+        it 'should back up the file' do
+          newtype.expects(:backup)
+          subject.flush_file('/blor')
+        end
+
+        it 'should remove the file' do
+          File.expects(:unlink).with('/blor')
+          subject.flush_file('/blor')
+        end
+
+        it 'should not write to the file' do
+          subject.expects(:perform_write).with('/blor', '').never
+          subject.flush_file('/blor')
+        end
+      end
+
+      describe 'with empty file contents and no destination file' do
+        before do
+          subject.dirty_file!('/blor')
+          @flattype.stubs(:new).with('/blor').returns newtype
+          File.stubs(:exist?).with('/blor').returns false
+
+          subject.stubs(:format_file).returns ''
+        end
+
+        it 'should not try to remove the file' do
+          File.expects(:exist?).with('/blor').returns false
+          File.expects(:unlink).never
+          subject.flush_file('/blor')
+        end
+
+        it 'should not try to back up the file' do
+          newtype.expects(:backup).never
+          subject.flush_file('/blor')
+        end
+      end
+
+      describe 'with a non-empty file' do
+        before do
+          subject.dirty_file!('/blor')
+          @flattype.stubs(:new).with('/blor').returns newtype
+          File.stubs(:exist?).with('/blor').returns true
+
+          subject.stubs(:format_file).returns 'not empty'
+        end
+
+        it 'should not remove the file' do
+          File.expects(:unlink).never
+          subject.flush_file('/blor')
+        end
+      end
+    end
   end
+
 
   describe 'when formatting resources for flushing' do
     let(:provider_class) { multiple_file_provider }
