@@ -359,119 +359,128 @@ describe PuppetX::FileMapper do
       subject.expects(:flush_file).with('/multiple/file/provider-flush')
       resource.flush
     end
+  end
 
-    describe 'and performing the flush' do
+  describe 'when flushing' do
 
-      let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
-      before { newtype.stubs(:backup) }
+    subject { multiple_file_provider }
 
-      it 'should generate filetypes for new files' do
+    let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
+    let(:resource) { resource = dummytype.new(params_yay) }
+
+    before { newtype.stubs(:backup) }
+
+    it 'should generate filetypes for new files' do
+      subject.dirty_file!('/multiple/file/provider-flush')
+      @flattype.expects(:new).with('/multiple/file/provider-flush').returns newtype
+      resource.flush
+    end
+
+    it 'should use existing filetypes for existing files' do
+      stub_filetype = stub()
+      stub_filetype.expects(:backup)
+      stub_filetype.expects(:write)
+      subject.dirty_file!('/multiple/file/provider-flush')
+      subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
+      resource.flush
+    end
+
+    it 'should trigger a flush on dirty files' do
+      subject.dirty_file!('/multiple/file/provider-flush')
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush')
+      resource.flush
+    end
+
+    it 'should not flush clean files' do
+      subject.expects(:perform_write).never
+      resource.flush
+    end
+  end
+
+  describe 'validating the file contents to flush' do
+    subject { multiple_file_provider }
+
+    before do
+      subject.stubs(:format_file).returns %w{invalid data}
+      subject.dirty_file!('/multiple/file/provider-flush')
+    end
+
+    it 'should raise an error if given an invalid value for file contents' do
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', %w{invalid data}).never
+      expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error Puppet::DevError, /expected .* to return a String, got a Array/
+    end
+  end
+
+  describe 'when unlinking empty files' do
+
+    subject { multiple_file_provider }
+
+    let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
+
+    before do
+      subject.unlink_empty_files = true
+      newtype.stubs(:backup)
+      File.stubs(:unlink)
+    end
+
+    describe 'with empty file contents' do
+      before do
         subject.dirty_file!('/multiple/file/provider-flush')
-        @flattype.expects(:new).with('/multiple/file/provider-flush').returns newtype
-        resource.flush
+        @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
+        File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
+
+        subject.stubs(:format_file).returns ''
       end
 
-      it 'should use existing filetypes for existing files' do
-        stub_filetype = stub()
-        stub_filetype.expects(:backup)
-        stub_filetype.expects(:write)
-        subject.dirty_file!('/multiple/file/provider-flush')
-        subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
-        resource.flush
+      it 'should back up the file' do
+        newtype.expects(:backup)
+        subject.flush_file('/multiple/file/provider-flush')
       end
 
-      it 'should trigger a flush on dirty files' do
-        subject.dirty_file!('/multiple/file/provider-flush')
-        subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush')
-        resource.flush
+      it 'should remove the file' do
+        File.expects(:unlink).with('/multiple/file/provider-flush')
+        subject.flush_file('/multiple/file/provider-flush')
       end
 
-      it 'should not flush clean files' do
-        subject.expects(:perform_write).never
-        resource.flush
+      it 'should not write to the file' do
+        subject.expects(:perform_write).with('/multiple/file/provider-flush', '').never
+        subject.flush_file('/multiple/file/provider-flush')
       end
     end
 
-    describe 'validating the file contents to flush' do
+    describe 'with empty file contents and no destination file' do
       before do
-        subject.stubs(:format_file).returns %w{invalid data}
         subject.dirty_file!('/multiple/file/provider-flush')
+        @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
+        File.stubs(:exist?).with('/multiple/file/provider-flush').returns false
+
+        subject.stubs(:format_file).returns ''
       end
 
-      it 'should raise an error if given an invalid value for file contents' do
-        subject.expects(:perform_write).with('/multiple/file/provider-flush', %w{invalid data}).never
-        expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error Puppet::DevError, /expected .* to return a String, got a Array/
+      it 'should not try to remove the file' do
+        File.expects(:exist?).with('/multiple/file/provider-flush').returns false
+        File.expects(:unlink).never
+        subject.flush_file('/multiple/file/provider-flush')
+      end
+
+      it 'should not try to back up the file' do
+        newtype.expects(:backup).never
+        subject.flush_file('/multiple/file/provider-flush')
       end
     end
 
-    describe 'and "unlink_empty_files" is true' do
-      let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
-
+    describe 'with a non-empty file' do
       before do
-        subject.unlink_empty_files = true
-        newtype.stubs(:backup)
-        File.stubs(:unlink)
+        subject.dirty_file!('/multiple/file/provider-flush')
+        @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
+        File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
+
+        subject.stubs(:format_file).returns 'not empty'
       end
 
-      describe 'with empty file contents' do
-        before do
-          subject.dirty_file!('/multiple/file/provider-flush')
-          @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
-          File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
-
-          subject.stubs(:format_file).returns ''
-        end
-
-        it 'should back up the file' do
-          newtype.expects(:backup)
-          subject.flush_file('/multiple/file/provider-flush')
-        end
-
-        it 'should remove the file' do
-          File.expects(:unlink).with('/multiple/file/provider-flush')
-          subject.flush_file('/multiple/file/provider-flush')
-        end
-
-        it 'should not write to the file' do
-          subject.expects(:perform_write).with('/multiple/file/provider-flush', '').never
-          subject.flush_file('/multiple/file/provider-flush')
-        end
-      end
-
-      describe 'with empty file contents and no destination file' do
-        before do
-          subject.dirty_file!('/multiple/file/provider-flush')
-          @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
-          File.stubs(:exist?).with('/multiple/file/provider-flush').returns false
-
-          subject.stubs(:format_file).returns ''
-        end
-
-        it 'should not try to remove the file' do
-          File.expects(:exist?).with('/multiple/file/provider-flush').returns false
-          File.expects(:unlink).never
-          subject.flush_file('/multiple/file/provider-flush')
-        end
-
-        it 'should not try to back up the file' do
-          newtype.expects(:backup).never
-          subject.flush_file('/multiple/file/provider-flush')
-        end
-      end
-
-      describe 'with a non-empty file' do
-        before do
-          subject.dirty_file!('/multiple/file/provider-flush')
-          @flattype.stubs(:new).with('/multiple/file/provider-flush').returns newtype
-          File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
-
-          subject.stubs(:format_file).returns 'not empty'
-        end
-
-        it 'should not remove the file' do
-          File.expects(:unlink).never
-          subject.flush_file('/multiple/file/provider-flush')
-        end
+      it 'should not remove the file' do
+        File.expects(:unlink).never
+        subject.flush_file('/multiple/file/provider-flush')
       end
     end
   end
