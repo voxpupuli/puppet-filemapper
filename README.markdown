@@ -28,8 +28,8 @@ The Backstory
 
 Managing Unix-ish systems generally means dealing with one of two things:
 
-  # Processes - starting them, stopping them, monitoring them, etc.
-  # Files - Creating them, editing, deleting them, specifying permissions, etc.
+  1. Processes - starting them, stopping them, monitoring them, etc.
+  1. Files - Creating them, editing, deleting them, specifying permissions, etc.
 
 Puppet has pretty good support in the provider layer for running commands, but
 the file manipulation layer has been lacking. The long-standing approach for
