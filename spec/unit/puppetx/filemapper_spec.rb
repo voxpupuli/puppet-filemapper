@@ -354,11 +354,6 @@ describe PuppetX::FileMapper do
       resource.property(:dummy_property).value = 'zoom'
       resource.property(:dummy_property).sync
     end
-
-    it 'should forward provider#flush to the class' do
-      subject.expects(:flush_file).with('/multiple/file/provider-flush')
-      resource.flush
-    end
   end
 
   describe 'when flushing' do
@@ -369,6 +364,11 @@ describe PuppetX::FileMapper do
     let(:resource) { resource = dummytype.new(params_yay) }
 
     before { newtype.stubs(:backup) }
+
+    it 'should forward provider#flush to the class' do
+      subject.expects(:flush_file).with('/multiple/file/provider-flush')
+      resource.flush
+    end
 
     it 'should generate filetypes for new files' do
       subject.dirty_file!('/multiple/file/provider-flush')
@@ -401,7 +401,7 @@ describe PuppetX::FileMapper do
     subject { multiple_file_provider }
 
     before do
-      subject.stubs(:format_file).returns %w{invalid data}
+      subject.stubs(:format_file).returns ['definitely', 'not', 'of', 'class', 'String']
       subject.dirty_file!('/multiple/file/provider-flush')
     end
 
