@@ -9,6 +9,7 @@ module PuppetX::FileMapper
   #
   # This method is necessary for the provider to be ensurable
   def create
+    raise Puppet::Error, "#{self.class} is in an error state" if self.class.failed?
     @resource.class.validproperties.each do |property|
       if value = @resource.should(property)
         @property_hash[property] = value
