@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+1.1.1
+-----
+
+2012-12-30
+
+This is a backwards compatible bugfix release.
+
+  * (filemapper-#4) Add resource failure when in error state
+
+Thanks to Reid Vandewiele for his contribution for this release.
+
 1.1.0
 -----
 
