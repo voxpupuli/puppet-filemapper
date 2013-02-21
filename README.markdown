@@ -64,12 +64,12 @@ containing the name of the file to be flushed.
 
 If `self.pre_flush_hook` raises an exception, the flush will not occur and the
 provider will be marked as failed and will refuse to perform any more flushes.
-If some sort of critical error occured, this can force the provider to error
+If some sort of critical error occurred, this can force the provider to error
 out before it starts stomping on files.
 
 `self.post_flush_hook` is guaranteed to run after any filesystem operations
 occur. This can be used for recovery if something goes wrong during the flush.
-If this method raises an exception, the provider will be makred as failed and
+If this method raises an exception, the provider will be marked as failed and
 will refuse to perform any more flushes.
 
 Removing empty files
@@ -247,6 +247,6 @@ Examples
 
 [puppet-network]: https://github.com/adrienthebo/puppet-network
 
-The filemapper extension was largely extracted out of the [puppet-network][puppet-network]
+The Filemapper extension was largely extracted out of the [puppet-network][puppet-network]
 module. That code base should display the weird edge cases that this extension
 handles.
