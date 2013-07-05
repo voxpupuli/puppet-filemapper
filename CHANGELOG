@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+1.1.2
+-----
+
+2013-07-04
+
+This is a backwards compatible bugfix release.
+
+  * Update permissions of built modules to be a+rX.
+
 1.1.1
 -----
 
