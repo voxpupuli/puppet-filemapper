@@ -6,9 +6,10 @@ describe PuppetX::FileMapper do
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
     @flattype = stub 'Class<FileType<Flat>>'
-
+    @crontype  = stub 'Class<FileType<Crontab>>'
 
     Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
+    Puppet::Util::FileType.stubs(:filetype).with(:crontab).returns @crontype
   end
 
   after :each do
@@ -60,9 +61,13 @@ describe PuppetX::FileMapper do
   end
 
   describe 'when included' do
-    it 'should initialize the provider as not failed' do
-      provider = dummytype.provide(:foo) { include PuppetX::FileMapper }
-      provider.should_not be_failed
+    describe 'after initilizing attributes' do
+      subject { dummytype.provide(:foo) { include PuppetX::FileMapper } }
+
+      its(:mapped_files) { should be_empty }
+      its(:unlink_empty_files) { should eq(false) }
+      its(:filetype) { should eq(:flat) }
+      it { should_not be_failed }
     end
 
     describe 'when generating attr_accessors' do
@@ -481,6 +486,50 @@ describe PuppetX::FileMapper do
       it 'should not remove the file' do
         File.expects(:unlink).never
         subject.flush_file('/multiple/file/provider-flush')
+      end
+    end
+  end
+
+  describe 'when using an alternate filetype' do
+
+    subject { multiple_file_provider }
+
+    before do
+      subject.filetype = :crontab
+    end
+
+    it 'should assign that filetype to loaded files' do
+      @crontype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
+      @crontype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
+
+      subject.load_all_providers_from_disk
+    end
+
+    describe 'that does not implement backup' do
+      let(:resource) { resource = dummytype.new(params_yay) }
+      let(:stub_filetype) { stub() }
+
+      before :each do
+        subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
+        subject.dirty_file!('/multiple/file/provider-flush')
+
+        stub_filetype.expects(:respond_to?).with(:backup).returns(false)
+        stub_filetype.expects(:backup).never
+      end
+
+      it 'should not call backup when writing files' do
+        stub_filetype.stubs(:write)
+
+        resource.flush
+      end
+
+      it 'should not call backup when unlinking files' do
+        subject.unlink_empty_files = true
+        subject.stubs(:format_file).returns ''
+        File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
+        File.stubs(:unlink)
+
+        resource.flush
       end
     end
   end
