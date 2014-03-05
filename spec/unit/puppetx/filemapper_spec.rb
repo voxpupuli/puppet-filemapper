@@ -6,9 +6,10 @@ describe PuppetX::FileMapper do
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
     @flattype = stub 'Class<FileType<Flat>>'
-
+    @crontype  = stub 'Class<FileType<Crontab>>'
 
     Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
+    Puppet::Util::FileType.stubs(:filetype).with(:crontab).returns @crontype
   end
 
   after :each do
@@ -65,6 +66,7 @@ describe PuppetX::FileMapper do
 
       its(:mapped_files) { should be_empty }
       its(:unlink_empty_files) { should eq(false) }
+      its(:filetype) { should eq(:flat) }
       it { should_not be_failed }
     end
 
@@ -486,6 +488,23 @@ describe PuppetX::FileMapper do
         subject.flush_file('/multiple/file/provider-flush')
       end
     end
+  end
+
+  describe 'when using an alternate filetype' do
+
+    subject { multiple_file_provider }
+
+    before do
+      subject.filetype = :crontab
+    end
+
+    it 'should assign that filetype to loaded files' do
+      @crontype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
+      @crontype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
+
+      subject.load_all_providers_from_disk
+    end
+
   end
 
   describe 'flush hooks' do
