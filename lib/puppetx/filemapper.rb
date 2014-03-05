@@ -69,7 +69,8 @@ module PuppetX::FileMapper
 
     def initvars
       @mapped_files = Hash.new {|h, k| h[k] = {}}
-      @failed       = false
+      @unlink_empty_files = false
+      @failed = false
       @all_providers = []
     end
 

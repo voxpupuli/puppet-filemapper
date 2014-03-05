@@ -60,9 +60,12 @@ describe PuppetX::FileMapper do
   end
 
   describe 'when included' do
-    it 'should initialize the provider as not failed' do
-      provider = dummytype.provide(:foo) { include PuppetX::FileMapper }
-      provider.should_not be_failed
+    describe 'after initilizing attributes' do
+      subject { dummytype.provide(:foo) { include PuppetX::FileMapper } }
+
+      its(:mapped_files) { should be_empty }
+      its(:unlink_empty_files) { should eq(false) }
+      it { should_not be_failed }
     end
 
     describe 'when generating attr_accessors' do
