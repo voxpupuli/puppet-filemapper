@@ -505,6 +505,33 @@ describe PuppetX::FileMapper do
       subject.load_all_providers_from_disk
     end
 
+    describe 'that does not implement backup' do
+      let(:resource) { resource = dummytype.new(params_yay) }
+      let(:stub_filetype) { stub() }
+
+      before :each do
+        subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
+        subject.dirty_file!('/multiple/file/provider-flush')
+
+        stub_filetype.expects(:respond_to?).with(:backup).returns(false)
+        stub_filetype.expects(:backup).never
+      end
+
+      it 'should not call backup when writing files' do
+        stub_filetype.stubs(:write)
+
+        resource.flush
+      end
+
+      it 'should not call backup when unlinking files' do
+        subject.unlink_empty_files = true
+        subject.stubs(:format_file).returns ''
+        File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
+        File.stubs(:unlink)
+
+        resource.flush
+      end
+    end
   end
 
   describe 'flush hooks' do

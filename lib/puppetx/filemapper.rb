@@ -296,7 +296,7 @@ module PuppetX::FileMapper
       @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(self.filetype).new(filename)
       filetype = @mapped_files[filename][:filetype]
 
-      filetype.backup
+      filetype.backup if filetype.respond_to? :backup
       filetype.write(contents)
     end
 
@@ -308,7 +308,7 @@ module PuppetX::FileMapper
         @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(self.filetype).new(filename)
         filetype = @mapped_files[filename][:filetype]
 
-        filetype.backup
+        filetype.backup if filetype.respond_to? :backup
 
         File.unlink(filename)
       end
