@@ -210,7 +210,11 @@ module PuppetX::FileMapper
 
         # Generate the attr_reader method
         define_method(attr) do
-          @property_hash[attr]
+          if @property_hash[attr].nil?
+            :absent
+          else
+            @property_hash[attr]
+          end
         end
 
         # Generate the attr_writer and have it mark the resource as dirty when called
