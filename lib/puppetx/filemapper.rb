@@ -72,6 +72,7 @@ module PuppetX::FileMapper
     attr_reader :mapped_files
 
     def initvars
+      super
       @mapped_files = Hash.new {|h, k| h[k] = {}}
       @unlink_empty_files = false
       @filetype = :flat
