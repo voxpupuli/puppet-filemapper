@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+1.1.3
+-----
+
+2014-09-02
+
+This is a backwards compatible bugfix release.
+
+  * Invoke super in self.initvars to initialize `@defaults`
+
+Thanks to Igor Galić for his work on this release.
+
 1.1.2
 -----
 
