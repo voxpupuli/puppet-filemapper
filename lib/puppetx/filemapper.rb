@@ -280,7 +280,7 @@ module PuppetX::FileMapper
           post_flush_hook(filename) if self.respond_to? :post_flush_hook
         end
       end
-    rescue => e
+    rescue
       # If something failed during the flush process, mark the provider as
       # failed. There's not much we can do about any file that's already been
       # flushed but we can stop smashing things.
