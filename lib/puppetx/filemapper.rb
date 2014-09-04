@@ -192,7 +192,10 @@ module PuppetX::FileMapper
 
       # generate hash of {provider_name => provider}
       providers = instances.inject({}) do |hash, instance|
-        hash[instance.name] = instance
+        # name is not necessarily the name_var.
+        # n.b. the following will fall flat for composite namevars.
+        namevar = resource_type.key_attributes.first
+        hash[instance.send(namevar)] = instance
         hash
       end
 
