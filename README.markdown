@@ -6,9 +6,7 @@ Synopsis
 
 Map files to resources and back with this handy dandy mixin!
 
-Documentation is available at [http://adrienthebo.github.com/puppet-filemapper/](http://adrienthebo.github.com/puppet-filemapper/)
-
-Travis Test status: [![Build Status](https://travis-ci.org/adrienthebo/puppet-filemapper.png)](https://travis-ci.org/adrienthebo/puppet-filemapper)
+Travis Test status: [![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png)](https://travis-ci.org/voxpupuli/puppet-filemapper)
 
 Description
 -----------
@@ -245,7 +243,7 @@ to the ParsedFile.
 Examples
 --------
 
-[puppet-network]: https://github.com/adrienthebo/puppet-network
+[puppet-network]: https://github.com/voxpupuli/puppet-network
 
 The Filemapper extension was largely extracted out of the [puppet-network][puppet-network]
 module. That code base should display the weird edge cases that this extension
