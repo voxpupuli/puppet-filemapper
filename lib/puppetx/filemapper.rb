@@ -169,10 +169,12 @@ module PuppetX::FileMapper
       # Read and parse each file.
       provider_hashes = []
       @mapped_files.each_pair do |filename, file_attrs|
-        p 'Filename: ' + filename
-	p 'File attributes: ' + file_attrs
-	p 'File type: ' + file_attrs[:filename]
-	p 'File type read: ' + file_attrs[:filetype].read
+#       p 'Filename: ' + filename
+#	p 'File attributes: ' + file_attrs
+#	p 'File type: ' + file_attrs[:filename]
+#	p 'File type read: ' + file_attrs[:filetype].read
+	p 'Filename class: ' + filename.class
+	p 'File attrs class: ' + file_attrs.class
 	p '-----------------'
 
         arr = parse_file(filename, file_attrs[:filetype].read)
