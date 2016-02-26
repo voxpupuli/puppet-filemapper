@@ -176,7 +176,7 @@ module PuppetX::FileMapper
 	p 'File attrs class: ' + file_attrs.class.to_s
 	p 'File attrs filetype class: ' + file_attrs[:filetype].class.to_s
 	p 'File attrs filetype path: ' + file_attrs[:filetype].path.to_s
-	p 'File attrs filetype path: ' + file_attrs[:filetype].path.class
+	p 'File attrs filetype path: ' + file_attrs[:filetype].path.class.to_s
 	p '-----------------'
 	STDOUT.flush
 
