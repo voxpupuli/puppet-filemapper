@@ -169,17 +169,6 @@ module PuppetX::FileMapper
       # Read and parse each file.
       provider_hashes = []
       @mapped_files.each_pair do |filename, file_attrs|
-        p 'Filename: ' + filename.to_s
-	p 'File attributes: ' + file_attrs.to_s
-	#p 'File type read: ' + file_attrs[:filetype].read.to_s
-	p 'Filename class: ' + filename.class.to_s
-	p 'File attrs class: ' + file_attrs.class.to_s
-	p 'File attrs filetype class: ' + file_attrs[:filetype].class.to_s
-	p 'File attrs filetype path: ' + file_attrs[:filetype].path.to_s
-	p 'File attrs filetype path: ' + file_attrs[:filetype].path.class.to_s
-	p '-----------------'
-	STDOUT.flush
-
 	# The filetype path must be a type pathname, or it must respond to to_str
 	# If it doesn't meet these criteria go to next file
 	_path = file_attrs[:filetype].path
