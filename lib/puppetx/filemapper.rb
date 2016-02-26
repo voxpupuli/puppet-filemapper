@@ -176,6 +176,7 @@ module PuppetX::FileMapper
 	p 'Filename class: ' + filename.class.to_s
 	p 'File attrs class: ' + file_attrs.class.to_s
 	p '-----------------'
+	STDOUT.flush
 
         arr = parse_file(filename, file_attrs[:filetype].read)
         unless arr.is_a? Array
