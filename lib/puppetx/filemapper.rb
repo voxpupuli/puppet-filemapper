@@ -171,10 +171,12 @@ module PuppetX::FileMapper
       @mapped_files.each_pair do |filename, file_attrs|
         p 'Filename: ' + filename.to_s
 	p 'File attributes: ' + file_attrs.to_s
-	p 'File type: ' + file_attrs[:filename].to_s
-	p 'File type read: ' + file_attrs[:filetype].read.to_s
+	#p 'File type: ' + file_attrs[:filename].to_s
+	#p 'File type read: ' + file_attrs[:filetype].read.to_s
 	p 'Filename class: ' + filename.class.to_s
 	p 'File attrs class: ' + file_attrs.class.to_s
+	p 'File attrs filename class: ' + file_attrs[:filename].class
+	p 'File attrs path class: ' + file_attrs[:path].class
 	p '-----------------'
 	STDOUT.flush
 
