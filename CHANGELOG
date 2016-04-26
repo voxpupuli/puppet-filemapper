@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+1.2.0
+-----
+
+2016 - TBD
+
+This is a backwards incompatible release.
+
+  * Drop Ruby 1.8.7 support
+
+Thanks to Joseph Yaworski for his work on this release.
+
 1.1.3
 -----
 

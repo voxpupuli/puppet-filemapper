@@ -4,19 +4,15 @@ require 'puppet/util/filetype'
 module PuppetX; end
 
 module PuppetX::FileMapper
-
   # Copy all desired resource properties into this resource for generation upon flush
   #
   # This method is necessary for the provider to be ensurable
   def create
     raise Puppet::Error, "#{self.class} is in an error state" if self.class.failed?
     @resource.class.validproperties.each do |property|
-      if value = @resource.should(property)
-        @property_hash[property] = value
-      end
+      @property_hash[property] = @resource.should(property) if @resource.should(property)
     end
-
-    self.dirty!
+    dirty!
   end
 
   # Use the prefetched status to determine of the resource exists.
@@ -25,7 +21,7 @@ module PuppetX::FileMapper
   #
   # @return [TrueClass || FalseClass]
   def exists?
-    @property_hash[:ensure] and @property_hash[:ensure] == :present
+    @property_hash[:ensure] && @property_hash[:ensure] == :present
   end
 
   # Update the property hash to mark this resource as absent for flushing
@@ -33,20 +29,19 @@ module PuppetX::FileMapper
   # This method is necessary for the provider to be ensurable
   def destroy
     @property_hash[:ensure] = :absent
-    self.dirty!
+    dirty!
   end
 
   # Mark the file associated with this resource as dirty
   def dirty!
     file = select_file
-    self.class.dirty_file! file
+    self.class.dirty_file!(file)
   end
-
 
   # When processing on this resource is complete, trigger a flush on the file
   # that this resource belongs to.
   def flush
-    self.class.flush_file(self.select_file)
+    self.class.flush_file(select_file)
   end
 
   def self.included(klass)
@@ -56,7 +51,6 @@ module PuppetX::FileMapper
   end
 
   module ClassMethods
-
     # @!attribute [rw] unlink_empty_files
     #   @return [TrueClass || FalseClass] Whether empty files will be removed
     attr_accessor :unlink_empty_files
@@ -73,7 +67,7 @@ module PuppetX::FileMapper
 
     def initvars
       super
-      @mapped_files = Hash.new {|h, k| h[k] = {}}
+      @mapped_files = Hash.new { |h, k| h[k] = {} }
       @unlink_empty_files = false
       @filetype = :flat
       @failed = false
@@ -108,14 +102,15 @@ module PuppetX::FileMapper
       provider_hashes = load_all_providers_from_disk
 
       provider_hashes.map do |h|
-        h.merge!({:provider => self.name, :ensure => :present})
+        h[:provider] = name
+        h[:ensure] = :present
         new(h)
       end
 
     rescue
       # If something failed while loading instances, mark the provider class
       # as failed and pass the exception along
-      @failed = true
+      failed!
       raise
     end
 
@@ -127,11 +122,11 @@ module PuppetX::FileMapper
       required_instance_hooks = [:select_file]
 
       required_class_hooks.each do |method|
-        raise Puppet::DevError, "#{self} has not implemented `self.#{method}`" unless self.respond_to? method
+        raise Puppet::DevError, "#{self} has not implemented `self.#{method}`" unless respond_to? method
       end
 
       required_instance_hooks.each do |method|
-        raise Puppet::DevError, "#{self} has not implemented `##{method}`" unless self.method_defined? method
+        raise Puppet::DevError, "#{self} has not implemented `##{method}`" unless method_defined? method
       end
     end
 
@@ -162,7 +157,7 @@ module PuppetX::FileMapper
       # Retrieve a list of files to fetch, and cache a copy of a filetype
       # for each one
       target_files.each do |file|
-        @mapped_files[file][:filetype] = Puppet::Util::FileType.filetype(self.filetype).new(file)
+        @mapped_files[file][:filetype] = Puppet::Util::FileType.filetype(filetype).new(file)
         @mapped_files[file][:dirty]    = false
       end
 
@@ -195,28 +190,24 @@ module PuppetX::FileMapper
     #
     # @param [Hash<String, Puppet::Resource>] resources
     def prefetch(resources = {})
-
       # generate hash of {provider_name => provider}
-      providers = instances.inject({}) do |hash, instance|
+      providers = instances.each_with_object({}) do |instance, hash|
         # name is not necessarily the name_var.
         # n.b. the following will fall flat for composite namevars.
         namevar = resource_type.key_attributes.first
         hash[instance.send(namevar)] = instance
-        hash
       end
 
       # For each prefetched resource, try to match it to a provider
       resources.each_pair do |resource_name, resource|
-        if provider = providers[resource_name]
-          resource.provider = provider
-        end
+        resource.provider = providers[resource_name] if providers[resource_name]
       end
     end
 
     # Create attr_accessors for properties and mark the provider as dirty on change.
     def mk_property_methods
       resource_type.validproperties.each do |attr|
-        attr = attr.intern if attr.respond_to? :intern and not attr.is_a? Symbol
+        attr = attr.intern if attr.respond_to?(:intern) && !attr.is_a?(Symbol)
 
         # Generate the attr_reader method
         define_method(attr) do
@@ -230,7 +221,7 @@ module PuppetX::FileMapper
         # Generate the attr_writer and have it mark the resource as dirty when called
         define_method("#{attr}=") do |val|
           @property_hash[attr] = val
-          self.dirty!
+          dirty!
         end
       end
     end
@@ -245,7 +236,7 @@ module PuppetX::FileMapper
     # @return [Array<Puppet::Provider>]
     def collect_providers_for_file(filename)
       @all_providers.select do |provider|
-        provider.select_file == filename and provider.ensure == :present
+        provider.select_file == filename && provider.ensure == :present
       end
     end
 
@@ -265,39 +256,32 @@ module PuppetX::FileMapper
     # @param [String] filename The path of the file to be flushed
     def flush_file(filename)
       if failed?
-        err "#{self.name} is in an error state, refusing to flush file #{filename}"
+        err "#{name} is in an error state, refusing to flush file #{filename}"
         return
       end
 
-      if not @mapped_files[filename][:dirty]
-        Puppet.debug "#{self.name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
+      if !@mapped_files[filename][:dirty]
+        Puppet.debug "#{name} was requested to flush the file #{filename}, but it was not marked as dirty - doing nothing."
       else
         # Collect all providers that should be present and pass them to the
         # including class for formatting.
         target_providers = collect_providers_for_file(filename)
-        file_contents = self.format_file(filename, target_providers)
+        file_contents = format_file(filename, target_providers)
 
-        unless file_contents.is_a? String
-          raise Puppet::DevError, "expected #{self}.format_file to return a String, got a #{file_contents.class}"
-        end
+        raise Puppet::DevError, "expected #{self}.format_file to return a String, got a #{file_contents.class}" unless file_contents.is_a? String
 
         # Call the `pre_flush_hook` method if it's defined
-        pre_flush_hook(filename) if self.respond_to? :pre_flush_hook
+        pre_flush_hook(filename) if respond_to? :pre_flush_hook
 
         begin
-          if file_contents.empty? and self.unlink_empty_files
-            remove_empty_file(filename)
-          else
-            perform_write(filename, file_contents)
-          end
+          file_contents.empty? && unlink_empty_files ? remove_empty_file(filename) : perform_write(filename, file_contents)
         ensure
-          post_flush_hook(filename) if self.respond_to? :post_flush_hook
+          post_flush_hook(filename) if respond_to? :post_flush_hook
         end
       end
     rescue
-      # If something failed during the flush process, mark the provider as
-      # failed. There's not much we can do about any file that's already been
-      # flushed but we can stop smashing things.
+      # If something failed during the flush process, mark the provider as failed. There's not
+      # much we can do about any file that's already been flushed but we can stop smashing things.
       @failed = true
       raise
     end
@@ -307,7 +291,7 @@ module PuppetX::FileMapper
     # @param [String] filename The destination filename
     # @param [String] contents The new file contents
     def perform_write(filename, contents)
-      @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(self.filetype).new(filename)
+      @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(filetype).new(filename)
       filetype = @mapped_files[filename][:filetype]
 
       filetype.backup if filetype.respond_to? :backup
@@ -318,14 +302,13 @@ module PuppetX::FileMapper
     #
     # @param [String] filename The file to remove
     def remove_empty_file(filename)
-      if File.exist? filename
-        @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(self.filetype).new(filename)
-        filetype = @mapped_files[filename][:filetype]
+      return unless File.exist? filename
+      @mapped_files[filename][:filetype] ||= Puppet::Util::FileType.filetype(filetype).new(filename)
+      filetype = @mapped_files[filename][:filetype]
 
-        filetype.backup if filetype.respond_to? :backup
+      filetype.backup if filetype.respond_to? :backup
 
-        File.unlink(filename)
-      end
+      File.unlink(filename)
     end
   end
 end
