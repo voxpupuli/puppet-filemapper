@@ -2,14 +2,13 @@ require 'spec_helper'
 require 'puppetx/filemapper'
 
 describe PuppetX::FileMapper do
-
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
     @flattype = stub 'Class<FileType<Flat>>'
-    @crontype  = stub 'Class<FileType<Crontab>>'
+    @crontype = stub 'Class<FileType<Crontab>>'
 
-    Puppet::Util::FileType.stubs(:filetype).with(:flat).returns @flattype
-    Puppet::Util::FileType.stubs(:filetype).with(:crontab).returns @crontype
+    Puppet::Util::FileType.stubs(:filetype).with(:flat).returns(@flattype)
+    Puppet::Util::FileType.stubs(:filetype).with(:crontab).returns(@crontype)
   end
 
   after :each do
@@ -28,61 +27,85 @@ describe PuppetX::FileMapper do
   let(:single_file_provider) do
     dummytype.provide(:single) do
       include PuppetX::FileMapper
-      def self.target_files; ['/single/file/provider']; end
-      def self.parse_file(filename, content)
-        [{:name => 'yay', :dummy_param => :bla, :dummy_property => 'baz'}]
+      def self.target_files
+        ['/single/file/provider']
       end
-      def select_file; '/single/file/provider'; end
-      def self.format_file(filename, providers); 'flushback'; end
+
+      def self.parse_file(_filename, _content)
+        [{ :name => 'yay', :dummy_param => :bla, :dummy_property => 'baz' }]
+      end
+
+      def select_file
+        '/single/file/provider'
+      end
+
+      def self.format_file(_filename, _providers)
+        'flushback'
+      end
     end
   end
 
   let(:multiple_file_provider) do
     dummytype.provide(:multiple, :resource_type => dummytype) do
       include PuppetX::FileMapper
-      def self.target_files; ['/multiple/file/provider-one', '/multiple/file/provider-two']; end
-      def self.parse_file(filename, content)
+      def self.target_files
+        ['/multiple/file/provider-one', '/multiple/file/provider-two']
+      end
+
+      def self.parse_file(filename, _content)
         case filename
-        when '/multiple/file/provider-one' then [{:name => 'yay', :dummy_param => :bla, :dummy_property => 'baz'}]
-        when '/multiple/file/provider-two' then [{:name => 'whee', :dummy_param => :ohai, :dummy_property => 'wat'}]
+        when '/multiple/file/provider-one' then [{ :name => 'yay', :dummy_param => :bla, :dummy_property => 'baz' }]
+        when '/multiple/file/provider-two' then [{ :name => 'whee', :dummy_param => :ohai, :dummy_property => 'wat' }]
         end
       end
-      def select_file; '/multiple/file/provider-flush'; end
-      def self.format_file(filename, providers); 'multiple flush content'; end
+
+      def select_file
+        '/multiple/file/provider-flush'
+      end
+
+      def self.format_file(_filename, _providers)
+        'multiple flush content'
+      end
     end
   end
 
-  let(:params_yay)  { {:name => 'yay', :dummy_param => :bla, :dummy_property => 'baz'} }
-  let(:params_whee) { {:name => 'whee', :dummy_param => :ohai, :dummy_property => 'wat'} }
-  let(:params_nope) { {:name => 'dead', :dummy_param => :nofoo, :dummy_property => 'sadprop'} }
+  let(:params_yay)  { { :name => 'yay', :dummy_param => :bla, :dummy_property => 'baz' } }
+  let(:params_whee) { { :name => 'whee', :dummy_param => :ohai, :dummy_property => 'wat' } }
+  let(:params_nope) { { :name => 'dead', :dummy_param => :nofoo, :dummy_property => 'sadprop' } }
 
   after :each do
     dummytype.provider_hash.clear
   end
 
   describe 'when included' do
-    describe 'after initilizing attributes' do
+    describe 'after initializing attributes' do
       subject { dummytype.provide(:foo) { include PuppetX::FileMapper } }
 
-      its(:mapped_files) { should be_empty }
-      its(:unlink_empty_files) { should eq(false) }
-      its(:filetype) { should eq(:flat) }
-      it { should_not be_failed }
+      it do
+        expect(subject.mapped_files).to be_empty
+        expect(subject.unlink_empty_files).to be(false)
+        expect(subject.filetype).to eq(:flat)
+        expect(subject).to_not be_failed
+      end
     end
 
     describe 'when generating attr_accessors' do
       subject { multiple_file_provider.new(params_yay) }
 
       describe 'for properties' do
-        it { should respond_to :dummy_property }
-        it { should respond_to :dummy_property= }
-        it { should respond_to :ensure }
-        it { should respond_to :ensure= }
+        it {
+          expect(subject).to respond_to(:dummy_property)
+          expect(subject).to respond_to(:dummy_property=)
+          expect(subject).to respond_to(:ensure)
+          expect(subject).to respond_to(:ensure=)
+        }
       end
 
       describe 'for parameters' do
-        it { should_not respond_to :dummy_param }
-        it { should_not respond_to :dummy_param= }
+        it {
+          expect(subject).not_to respond_to(:dummy_param)
+          expect(subject).not_to respond_to(:dummy_param=)
+        }
       end
     end
   end
@@ -93,7 +116,9 @@ describe PuppetX::FileMapper do
         dummytype.provide(:incomplete) { include PuppetX::FileMapper }
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self.target_files/ }
+      it {
+        expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self.target_files/)
+      }
     end
 
     describe "and it doesn't implement self.parse_file" do
@@ -104,7 +129,7 @@ describe PuppetX::FileMapper do
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self.parse_file/}
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self.parse_file/) }
     end
 
     describe "and it doesn't implement #select_file" do
@@ -112,12 +137,16 @@ describe PuppetX::FileMapper do
         dummytype.provide(:incomplete) do
           include PuppetX::FileMapper
           def self.target_files; end
-          def self.parse_file(filename, content); end
-          def self.format_file(filename, resources); 'foo'; end
+
+          def self.parse_file(_filename, _content); end
+
+          def self.format_file(_filename, _resources)
+            'foo'
+          end
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /#select_file/}
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /#select_file/) }
     end
 
     describe "and it doesn't implement self.format_file" do
@@ -125,18 +154,21 @@ describe PuppetX::FileMapper do
         dummytype.provide(:incomplete) do
           include PuppetX::FileMapper
           def self.target_files; end
-          def self.parse_file(filename, content); end
-          def select_file; '/single/file/provider'; end
+
+          def self.parse_file(_filename, _content); end
+
+          def select_file
+            '/single/file/provider'
+          end
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error Puppet::DevError, /self\.format_file/}
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self\.format_file/) }
     end
   end
 
   describe 'when reading' do
     describe 'a single file' do
-
       subject { single_file_provider }
 
       it 'should generate a filetype for that file' do
@@ -153,7 +185,7 @@ describe PuppetX::FileMapper do
 
       it 'should return the generated array' do
         @flattype.stubs(:new).with('/single/file/provider').once.returns @ramtype.new('/single/file/provider')
-        subject.load_all_providers_from_disk.should == [params_yay]
+        expect(subject.load_all_providers_from_disk).to eq([params_yay])
       end
     end
 
@@ -168,20 +200,20 @@ describe PuppetX::FileMapper do
 
       describe 'when parsing' do
         before do
-          @flattype.stubs(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
-          @flattype.stubs(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
+          @flattype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
+          @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
         end
 
         it 'should parse each file' do
-          subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns []
-          subject.expects(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns []
+          subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns([])
+          subject.expects(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns([])
           subject.load_all_providers_from_disk
         end
 
         it 'should return the generated array' do
           data = subject.load_all_providers_from_disk
-          data.should be_include(params_yay)
-          data.should be_include(params_whee)
+          expect(data).to include(params_yay)
+          expect(data).to include(params_whee)
         end
       end
     end
@@ -190,15 +222,15 @@ describe PuppetX::FileMapper do
       subject { multiple_file_provider }
 
       before do
-        @flattype.stubs(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
-        @flattype.stubs(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
+        @flattype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
+        @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
       end
 
       it 'should ensure that retrieved values are in the right format' do
-        subject.stubs(:parse_file).with('/multiple/file/provider-one', 'barbar').returns Hash.new
-        subject.stubs(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns Hash.new
+        subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns({})
+        subject.stubs(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns({})
 
-        expect { subject.load_all_providers_from_disk }.to raise_error Puppet::DevError, /expected.*to return an Array, got a Hash/
+        expect { subject.load_all_providers_from_disk }.to raise_error(Puppet::DevError, /expected.*to return an Array, got a Hash/)
       end
     end
   end
@@ -207,35 +239,33 @@ describe PuppetX::FileMapper do
     subject { multiple_file_provider }
 
     before do
-      @flattype.stubs(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
-      @flattype.stubs(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
+      @flattype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(:read => 'barbar'))
+      @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(:read => 'bazbaz'))
     end
 
     it 'should generate a provider instance from hashes' do
+      params_yay[:provider] = subject.name
+      params_whee[:provider] = subject.name
 
-      params_yay.merge!({:provider => subject.name})
-      params_whee.merge!({:provider => subject.name})
-
-      subject.expects(:new).with(params_yay.merge({:ensure => :present})).returns stub()
-      subject.expects(:new).with(params_whee.merge({:ensure => :present})).returns stub()
+      subject.expects(:new).with(params_yay.merge(:ensure => :present)).returns stub
+      subject.expects(:new).with(params_whee.merge(:ensure => :present)).returns stub
       subject.instances
-
     end
 
     it 'should generate a provider instance for each hash' do
       provs = subject.instances
-      provs.should have(2).items
-      provs.each { |prov| prov.should be_a_kind_of(Puppet::Provider)}
+      expect(provs.size).to eq(2)
+      provs.each { |prov| expect(prov).to be_a_kind_of(Puppet::Provider) }
     end
 
     [
-      {:name => 'yay', :dummy_property => 'baz'},
-      {:name => 'whee', :dummy_property => 'wat'},
+      { :name => 'yay', :dummy_property => 'baz' },
+      { :name => 'whee', :dummy_property => 'wat' },
     ].each do |values|
       it "should match hash values to provider properties for #{values[:name]}" do
         provs = subject.instances
-        prov = provs.find {|prov| prov.name == values[:name]}
-        values.each_pair { |property, value| prov.send(property).should == value }
+        prov = provs.find { |foundprov| foundprov.name == values[:name] }
+        values.each_pair { |property, value| expect(prov.send(property)).to eq(value) }
       end
     end
   end
@@ -243,21 +273,20 @@ describe PuppetX::FileMapper do
   describe 'when prefetching' do
     subject { multiple_file_provider }
 
-    let(:provider_yay) { subject.new(params_yay.merge({:provider => subject.name})) }
-    let(:provider_whee) { subject.new(params_whee.merge({:provider => subject.name})) }
+    let(:provider_yay) { subject.new(params_yay.merge(:provider => subject.name)) }
+    let(:provider_whee) { subject.new(params_whee.merge(:provider => subject.name)) }
 
     before do
       subject.stubs(:instances).returns [provider_yay, provider_whee]
     end
 
     let(:resources) do
-      [params_yay, params_whee, params_nope].inject({}) do |h, params|
+      [params_yay, params_whee, params_nope].each_with_object({}) do |params, h|
         h[params[:name]] = dummytype.new(params)
-        h
       end
     end
 
-    it "should update resources with existing providers" do
+    it 'should update resources with existing providers' do
       resources['yay'].expects(:provider=).with(provider_yay)
       resources['whee'].expects(:provider=).with(provider_whee)
 
@@ -275,58 +304,59 @@ describe PuppetX::FileMapper do
 
     before do
       dummytype.defaultprovider = subject
-      subject.any_instance.stubs(:resource_type).returns dummytype
+      subject.any_instance.stubs(:resource_type).returns(dummytype)
+      subject.mapped_files['/multiple/file/provider-flush'][:dirty] = false
     end
 
     describe 'from absent to present' do
       let(:resource) { dummytype.new(:name => 'boom', :dummy_property => 'bang') }
       it 'should mark the related file as dirty' do
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_false
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:ensure).sync
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_true
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(true)
       end
     end
 
     describe 'from present to absent' do
       it 'should mark the related file as dirty' do
         resource = dummytype.new(:name => 'boom', :dummy_property => 'bang', :ensure => :absent)
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_false
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:ensure).sync
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_true
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(true)
       end
     end
 
     describe 'on a property' do
-      let(:resource) { resource = dummytype.new(params_yay) }
+      let(:resource) { dummytype.new(params_yay) }
 
       before do
-        prov = subject.new(params_yay.merge({:ensure => :present}))
+        prov = subject.new(params_yay.merge(:ensure => :present))
         subject.stubs(:instances).returns [prov]
-        subject.prefetch({params_yay[:name] => resource})
+        subject.prefetch(params_yay[:name] => resource)
       end
 
       it 'should mark the related file as dirty' do
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_false
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:dummy_property).value = 'new value'
         resource.property(:dummy_property).sync
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_true
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(true)
       end
     end
 
     describe 'on a parameter' do
-      let(:resource) { resource = dummytype.new(params_yay) }
+      let(:resource) { dummytype.new(params_yay) }
 
       before do
-        prov = subject.new(params_yay.merge({:ensure => :present}))
+        prov = subject.new(params_yay.merge(:ensure => :present))
         subject.stubs(:instances).returns [prov]
-        subject.prefetch({params_yay[:name] => resource})
+        subject.prefetch(params_yay[:name] => resource)
       end
 
       it 'should not mark the related file as dirty' do
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_false
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.parameter(:dummy_param).value = 'new value'
         resource.flush
-        subject.mapped_files['/multiple/file/provider-flush'][:dirty].should be_false
+        expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
       end
     end
   end
@@ -339,7 +369,7 @@ describe PuppetX::FileMapper do
       subject.any_instance.stubs(:resource_type).returns dummytype
     end
 
-    let(:resource) { resource = dummytype.new(params_yay) }
+    let(:resource) { dummytype.new(params_yay) }
 
     it 'should refuse to flush if the provider is in a failed state' do
       subject.dirty_file!('/multiple/file/provider-flush')
@@ -362,11 +392,10 @@ describe PuppetX::FileMapper do
   end
 
   describe 'when flushing' do
-
     subject { multiple_file_provider }
 
     let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
-    let(:resource) { resource = dummytype.new(params_yay) }
+    let(:resource) { dummytype.new(params_yay) }
 
     before { newtype.stubs(:backup) }
 
@@ -382,7 +411,7 @@ describe PuppetX::FileMapper do
     end
 
     it 'should use existing filetypes for existing files' do
-      stub_filetype = stub()
+      stub_filetype = stub
       stub_filetype.expects(:backup)
       stub_filetype.expects(:write)
       subject.dirty_file!('/multiple/file/provider-flush')
@@ -406,18 +435,17 @@ describe PuppetX::FileMapper do
     subject { multiple_file_provider }
 
     before do
-      subject.stubs(:format_file).returns ['definitely', 'not', 'of', 'class', 'String']
+      subject.stubs(:format_file).returns %w(definitely not of class String)
       subject.dirty_file!('/multiple/file/provider-flush')
     end
 
     it 'should raise an error if given an invalid value for file contents' do
-      subject.expects(:perform_write).with('/multiple/file/provider-flush', %w{invalid data}).never
-      expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error Puppet::DevError, /expected .* to return a String, got a Array/
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', %w(invalid data)).never
+      expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error(Puppet::DevError, /expected .* to return a String, got a Array/)
     end
   end
 
   describe 'when unlinking empty files' do
-
     subject { multiple_file_provider }
 
     let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
@@ -491,7 +519,6 @@ describe PuppetX::FileMapper do
   end
 
   describe 'when using an alternate filetype' do
-
     subject { multiple_file_provider }
 
     before do
@@ -506,8 +533,8 @@ describe PuppetX::FileMapper do
     end
 
     describe 'that does not implement backup' do
-      let(:resource) { resource = dummytype.new(params_yay) }
-      let(:stub_filetype) { stub() }
+      let(:resource) { dummytype.new(params_yay) }
+      let(:stub_filetype) { stub }
 
       before :each do
         subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
@@ -535,7 +562,6 @@ describe PuppetX::FileMapper do
   end
 
   describe 'flush hooks' do
-
     subject { multiple_file_provider }
 
     before :each do
@@ -562,7 +588,7 @@ describe PuppetX::FileMapper do
       subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush content').raises RuntimeError
       subject.expects(:post_flush_hook)
 
-      expect { subject.flush_file '/multiple/file/provider-flush' }.to raise_error RuntimeError
+      expect { subject.flush_file '/multiple/file/provider-flush' }.to raise_error(RuntimeError)
     end
   end
 
@@ -575,7 +601,7 @@ describe PuppetX::FileMapper do
     let(:current_resource) { dummytype.new(params_whee) }
 
     let(:remove_provider) { provider_class.new(params_nope) }
-    let(:remove_resource) { dummytype.new(params_nope.merge({:ensure => :absent})) }
+    let(:remove_resource) { dummytype.new(params_nope.merge(:ensure => :absent)) }
 
     let(:unmanaged_provider) { provider_class.new(:name => 'unmanaged_resource', :dummy_param => 'zoom', :dummy_property => 'squid', :ensure => :present) }
 
@@ -587,7 +613,7 @@ describe PuppetX::FileMapper do
       provider_class.any_instance.stubs(:resource_type).returns dummytype
 
       provider_class.stubs(:instances).returns provider_stubs
-      provider_class.prefetch(resource_stubs.inject({}) { |h, r| h[r.name] = r; h})
+      provider_class.prefetch(resource_stubs.each_with_object({}) { |r, h| h[r.name] = r })
 
       # Pretend that we're the resource harness and apply the ensure param
       resource_stubs.each { |r| r.property(:ensure).sync }
@@ -603,13 +629,17 @@ describe PuppetX::FileMapper do
       subject { multiple_file_provider.collect_providers_for_file('/multiple/file/provider-flush').map(&:name) }
 
       describe 'present resources' do
-        it { should be_include 'yay' }
-        it { should be_include 'whee' }
-        it { should be_include 'unmanaged_resource' }
+        it {
+          expect(subject).to include('yay')
+          expect(subject).to include('whee')
+          expect(subject).to include('unmanaged_resource')
+        }
       end
 
       describe 'absent resources' do
-        it { should_not be_include 'nope' }
+        it {
+          expect(subject).to_not include('nope')
+        }
       end
     end
   end

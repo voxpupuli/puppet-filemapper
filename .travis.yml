@@ -1,8 +1,44 @@
 ---
+sudo: false
 language: ruby
-script: "bundle exec rspec --color --format documentation"
+cache: bundler
+bundler_args: --without system_tests
+before_install: rm Gemfile.lock || true
+script:
+  - 'bundle exec rake $CHECK'
+matrix:
+  fast_finish: true
+  include:
+  - rvm: 1.9.3
+    env: PUPPET_VERSION="~> 3.0" STRICT_VARIABLES="yes" CHECK=test
+  - rvm: 2.1.8
+    env: PUPPET_VERSION="~> 3.0" STRICT_VARIABLES="yes" CHECK=test
+  - rvm: 1.9.3
+    env: PUPPET_VERSION="~> 3.0" STRICT_VARIABLES="yes" CHECK=test FUTURE_PARSER=yes
+  - rvm: 2.1.8
+    env: PUPPET_VERSION="~> 3.0" STRICT_VARIABLES="yes" CHECK=test FUTURE_PARSER=yes
+  - rvm: 2.1.8
+    env: PUPPET_VERSION="~> 4.0" STRICT_VARIABLES="yes" CHECK=test
+  - rvm: 2.2.4
+    env: PUPPET_VERSION="~> 4.0" STRICT_VARIABLES="yes" CHECK=test
+  - rvm: 2.2.4
+    env: PUPPET_VERSION="~> 4.0" STRICT_VARIABLES="yes" CHECK=rubocop
+  - rvm: 2.3.0
+    env: PUPPET_VERSION="~> 4.0" STRICT_VARIABLES="yes" CHECK=test
+  allow_failures:
+    - rvm: 2.3.0
+      env: PUPPET_VERSION="~> 4.0" STRICT_VARIABLES="yes" CHECK=test
 notifications:
   email: false
-rvm:
-  - 1.9.3
-  - 1.8.7
+deploy:
+  provider: puppetforge
+  user: puppet
+  password:
+    secure: "UGESupMDWK72+F8wmPUdu+d5/q//AslAedZcCi0tS7OSEcn8tRkiCoPgbbKdmH7sJmjHyz/BybIJFnyTbdOIrGeopLo0nzKxkS1JXIQ/j914vFZg6aE5oRJaUl4d0AV6YFilMEiYLFJnhyBh5QenWh4Q1Q9tgafsEU3ph2fvqC8="
+  on:
+    tags: true
+    # all_branches is required to use tags
+    all_branches: true
+    # Only publish if our main Ruby target builds
+    rvm: 1.9.3
+    condition: "$FUTURE_PARSER = yes"
