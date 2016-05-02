@@ -9,6 +9,8 @@ CHANGELOG
 This is a backwards incompatible release.
 
   * Drop Ruby 1.8.7 support
+  * Move to voxpupuli namespace
+  * Significant code quality improvements
 
 Thanks to Joseph Yaworski for his work on this release.
 
