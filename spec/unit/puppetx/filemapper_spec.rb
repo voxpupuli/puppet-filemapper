@@ -171,19 +171,19 @@ describe PuppetX::FileMapper do
     describe 'a single file' do
       subject { single_file_provider }
 
-      it 'should generate a filetype for that file' do
+      it 'generates a filetype for that file' do
         @flattype.expects(:new).with('/single/file/provider').once.returns @ramtype.new('/single/file/provider')
         subject.load_all_providers_from_disk
       end
 
-      it 'should parse each file' do
+      it 'parses each file' do
         stub_file = stub(read: 'file contents')
         @flattype.stubs(:new).with('/single/file/provider').once.returns stub_file
         subject.expects(:parse_file).with('/single/file/provider', 'file contents').returns []
         subject.load_all_providers_from_disk
       end
 
-      it 'should return the generated array' do
+      it 'returns the generated array' do
         @flattype.stubs(:new).with('/single/file/provider').once.returns @ramtype.new('/single/file/provider')
         expect(subject.load_all_providers_from_disk).to eq([params_yay])
       end
@@ -192,7 +192,7 @@ describe PuppetX::FileMapper do
     describe 'multiple files' do
       subject { multiple_file_provider }
 
-      it 'should generate a filetype for each file' do
+      it 'generates a filetype for each file' do
         @flattype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(read: 'barbar'))
         @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(read: 'bazbaz'))
         subject.load_all_providers_from_disk
@@ -204,13 +204,13 @@ describe PuppetX::FileMapper do
           @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(read: 'bazbaz'))
         end
 
-        it 'should parse each file' do
+        it 'parses each file' do
           subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns([])
           subject.expects(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns([])
           subject.load_all_providers_from_disk
         end
 
-        it 'should return the generated array' do
+        it 'returns the generated array' do
           data = subject.load_all_providers_from_disk
           expect(data).to include(params_yay)
           expect(data).to include(params_whee)
@@ -226,7 +226,7 @@ describe PuppetX::FileMapper do
         @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(read: 'bazbaz'))
       end
 
-      it 'should ensure that retrieved values are in the right format' do
+      it 'ensures that retrieved values are in the right format' do
         subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns({})
         subject.stubs(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns({})
 
@@ -243,7 +243,7 @@ describe PuppetX::FileMapper do
       @flattype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(read: 'bazbaz'))
     end
 
-    it 'should generate a provider instance from hashes' do
+    it 'generates a provider instance from hashes' do
       params_yay[:provider] = subject.name
       params_whee[:provider] = subject.name
 
@@ -252,7 +252,7 @@ describe PuppetX::FileMapper do
       subject.instances
     end
 
-    it 'should generate a provider instance for each hash' do
+    it 'generates a provider instance for each hash' do
       provs = subject.instances
       expect(provs.size).to eq(2)
       provs.each { |prov| expect(prov).to be_a_kind_of(Puppet::Provider) }
@@ -286,14 +286,14 @@ describe PuppetX::FileMapper do
       end
     end
 
-    it 'should update resources with existing providers' do
+    it 'updates resources with existing providers' do
       resources['yay'].expects(:provider=).with(provider_yay)
       resources['whee'].expects(:provider=).with(provider_whee)
 
       subject.prefetch(resources)
     end
 
-    it "should not update resources that don't have providers" do
+    it "does not update resources that don't have providers" do
       resources['dead'].expects(:provider=).never
       subject.prefetch(resources)
     end
@@ -310,7 +310,7 @@ describe PuppetX::FileMapper do
 
     describe 'from absent to present' do
       let(:resource) { dummytype.new(name: 'boom', dummy_property: 'bang') }
-      it 'should mark the related file as dirty' do
+      it 'marks the related file as dirty' do
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:ensure).sync
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(true)
@@ -318,7 +318,7 @@ describe PuppetX::FileMapper do
     end
 
     describe 'from present to absent' do
-      it 'should mark the related file as dirty' do
+      it 'marks the related file as dirty' do
         resource = dummytype.new(name: 'boom', dummy_property: 'bang', ensure: :absent)
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:ensure).sync
@@ -335,7 +335,7 @@ describe PuppetX::FileMapper do
         subject.prefetch(params_yay[:name] => resource)
       end
 
-      it 'should mark the related file as dirty' do
+      it 'marks the related file as dirty' do
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:dummy_property).value = 'new value'
         resource.property(:dummy_property).sync
@@ -352,7 +352,7 @@ describe PuppetX::FileMapper do
         subject.prefetch(params_yay[:name] => resource)
       end
 
-      it 'should not mark the related file as dirty' do
+      it 'does not mark the related file as dirty' do
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.parameter(:dummy_param).value = 'new value'
         resource.flush
@@ -371,20 +371,20 @@ describe PuppetX::FileMapper do
 
     let(:resource) { dummytype.new(params_yay) }
 
-    it 'should refuse to flush if the provider is in a failed state' do
+    it 'refuses to flush if the provider is in a failed state' do
       subject.dirty_file!('/multiple/file/provider-flush')
       subject.failed!
       subject.expects(:collect_resources_for_provider).never
       resource.flush
     end
 
-    it 'should use the provider instance method `select_file` to locate the destination file' do
+    it 'uses the provider instance method `select_file` to locate the destination file' do
       resource.provider.expects(:select_file).returns '/multiple/file/provider-flush'
       resource.property(:dummy_property).value = 'zoom'
       resource.property(:dummy_property).sync
     end
 
-    it 'should trigger the class dirty_file! method' do
+    it 'triggers the class dirty_file! method' do
       subject.expects(:dirty_file!).with('/multiple/file/provider-flush')
       resource.property(:dummy_property).value = 'zoom'
       resource.property(:dummy_property).sync
@@ -399,18 +399,18 @@ describe PuppetX::FileMapper do
 
     before { newtype.stubs(:backup) }
 
-    it 'should forward provider#flush to the class' do
+    it 'forwards provider#flush to the class' do
       subject.expects(:flush_file).with('/multiple/file/provider-flush')
       resource.flush
     end
 
-    it 'should generate filetypes for new files' do
+    it 'generates filetypes for new files' do
       subject.dirty_file!('/multiple/file/provider-flush')
       @flattype.expects(:new).with('/multiple/file/provider-flush').returns newtype
       resource.flush
     end
 
-    it 'should use existing filetypes for existing files' do
+    it 'uses existing filetypes for existing files' do
       stub_filetype = stub
       stub_filetype.expects(:backup)
       stub_filetype.expects(:write)
@@ -419,13 +419,13 @@ describe PuppetX::FileMapper do
       resource.flush
     end
 
-    it 'should trigger a flush on dirty files' do
+    it 'triggers a flush on dirty files' do
       subject.dirty_file!('/multiple/file/provider-flush')
       subject.expects(:perform_write).with('/multiple/file/provider-flush', 'multiple flush content')
       resource.flush
     end
 
-    it 'should not flush clean files' do
+    it 'does not flush clean files' do
       subject.expects(:perform_write).never
       resource.flush
     end
@@ -439,7 +439,7 @@ describe PuppetX::FileMapper do
       subject.dirty_file!('/multiple/file/provider-flush')
     end
 
-    it 'should raise an error if given an invalid value for file contents' do
+    it 'raises an error if given an invalid value for file contents' do
       subject.expects(:perform_write).with('/multiple/file/provider-flush', %w(invalid data)).never
       expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error(Puppet::DevError, /expected .* to return a String, got a Array/)
     end
@@ -465,17 +465,17 @@ describe PuppetX::FileMapper do
         subject.stubs(:format_file).returns ''
       end
 
-      it 'should back up the file' do
+      it 'backs up the file' do
         newtype.expects(:backup)
         subject.flush_file('/multiple/file/provider-flush')
       end
 
-      it 'should remove the file' do
+      it 'removes the file' do
         File.expects(:unlink).with('/multiple/file/provider-flush')
         subject.flush_file('/multiple/file/provider-flush')
       end
 
-      it 'should not write to the file' do
+      it 'does not write to the file' do
         subject.expects(:perform_write).with('/multiple/file/provider-flush', '').never
         subject.flush_file('/multiple/file/provider-flush')
       end
@@ -490,13 +490,13 @@ describe PuppetX::FileMapper do
         subject.stubs(:format_file).returns ''
       end
 
-      it 'should not try to remove the file' do
+      it 'does not try to remove the file' do
         File.expects(:exist?).with('/multiple/file/provider-flush').returns false
         File.expects(:unlink).never
         subject.flush_file('/multiple/file/provider-flush')
       end
 
-      it 'should not try to back up the file' do
+      it 'does not try to back up the file' do
         newtype.expects(:backup).never
         subject.flush_file('/multiple/file/provider-flush')
       end
@@ -511,7 +511,7 @@ describe PuppetX::FileMapper do
         subject.stubs(:format_file).returns 'not empty'
       end
 
-      it 'should not remove the file' do
+      it 'does not remove the file' do
         File.expects(:unlink).never
         subject.flush_file('/multiple/file/provider-flush')
       end
@@ -525,7 +525,7 @@ describe PuppetX::FileMapper do
       subject.filetype = :crontab
     end
 
-    it 'should assign that filetype to loaded files' do
+    it 'assigns that filetype to loaded files' do
       @crontype.expects(:new).with('/multiple/file/provider-one').once.returns(stub(read: 'barbar'))
       @crontype.expects(:new).with('/multiple/file/provider-two').once.returns(stub(read: 'bazbaz'))
 
@@ -544,13 +544,13 @@ describe PuppetX::FileMapper do
         stub_filetype.expects(:backup).never
       end
 
-      it 'should not call backup when writing files' do
+      it 'does not call backup when writing files' do
         stub_filetype.stubs(:write)
 
         resource.flush
       end
 
-      it 'should not call backup when unlinking files' do
+      it 'does not call backup when unlinking files' do
         subject.unlink_empty_files = true
         subject.stubs(:format_file).returns ''
         File.stubs(:exist?).with('/multiple/file/provider-flush').returns true
@@ -570,7 +570,7 @@ describe PuppetX::FileMapper do
 
     let(:newtype) { @ramtype.new('/multiple/file/provider-flush') }
 
-    it 'should be called in order' do
+    it 'is called in order' do
       seq = sequence('flush')
       subject.expects(:respond_to?).with(:pre_flush_hook).returns true
       subject.expects(:respond_to?).with(:post_flush_hook).returns true
@@ -581,7 +581,7 @@ describe PuppetX::FileMapper do
       subject.flush_file '/multiple/file/provider-flush'
     end
 
-    it 'should call post_flush_hook even if an exception is raised' do
+    it 'calls post_flush_hook even if an exception is raised' do
       subject.stubs(:respond_to?).with(:pre_flush_hook).returns false
       subject.stubs(:respond_to?).with(:post_flush_hook).returns true
 
@@ -619,7 +619,7 @@ describe PuppetX::FileMapper do
       resource_stubs.each { |r| r.property(:ensure).sync }
     end
 
-    it 'should collect all resources for a given file' do
+    it 'collects all resources for a given file' do
       provider_class.expects(:collect_providers_for_file).with('/multiple/file/provider-flush').returns []
       provider_class.stubs(:perform_write)
       provider_class.flush_file('/multiple/file/provider-flush')
