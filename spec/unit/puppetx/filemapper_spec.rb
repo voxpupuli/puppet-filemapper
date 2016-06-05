@@ -85,7 +85,7 @@ describe PuppetX::FileMapper do
         expect(subject.mapped_files).to be_empty
         expect(subject.unlink_empty_files).to be(false)
         expect(subject.filetype).to eq(:flat)
-        expect(subject).to_not be_failed
+        expect(subject).not_to be_failed
       end
     end
 
@@ -638,7 +638,7 @@ describe PuppetX::FileMapper do
 
       describe 'absent resources' do
         it {
-          expect(subject).to_not include('nope')
+          expect(subject).not_to include('nope')
         }
       end
     end
