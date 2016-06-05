@@ -117,7 +117,7 @@ describe PuppetX::FileMapper do
       end
 
       it {
-        expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self.target_files/)
+        expect { subject.validate_class! }.to raise_error(Puppet::DevError, %r{self.target_files})
       }
     end
 
@@ -129,7 +129,7 @@ describe PuppetX::FileMapper do
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self.parse_file/) }
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, %r{self.parse_file}) }
     end
 
     describe "and it doesn't implement #select_file" do
@@ -146,7 +146,7 @@ describe PuppetX::FileMapper do
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /#select_file/) }
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, %r{#select_file}) }
     end
 
     describe "and it doesn't implement self.format_file" do
@@ -163,7 +163,7 @@ describe PuppetX::FileMapper do
         end
       end
 
-      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, /self\.format_file/) }
+      it { expect { subject.validate_class! }.to raise_error(Puppet::DevError, %r{self\.format_file}) }
     end
   end
 
@@ -230,7 +230,7 @@ describe PuppetX::FileMapper do
         subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns({})
         subject.stubs(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns({})
 
-        expect { subject.load_all_providers_from_disk }.to raise_error(Puppet::DevError, /expected.*to return an Array, got a Hash/)
+        expect { subject.load_all_providers_from_disk }.to raise_error(Puppet::DevError, %r{expected.*to return an Array, got a Hash})
       end
     end
   end
@@ -441,7 +441,7 @@ describe PuppetX::FileMapper do
 
     it 'raises an error if given an invalid value for file contents' do
       subject.expects(:perform_write).with('/multiple/file/provider-flush', %w(invalid data)).never
-      expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error(Puppet::DevError, /expected .* to return a String, got a Array/)
+      expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error(Puppet::DevError, %r{expected .* to return a String, got a Array})
     end
   end
 
