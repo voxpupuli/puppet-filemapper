@@ -1,12 +1,15 @@
 Puppet FileMapper
 =================
 
+[![Puppet Forge](http://img.shields.io/puppetforge/v/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge downloads](https://img.shields.io/puppetforge/dt/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge score](https://img.shields.io/puppetforge/f/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png)](https://travis-ci.org/voxpupuli/puppet-filemapper)
+
 Synopsis
 --------
 
 Map files to resources and back with this handy dandy mixin!
-
-Travis Test status: [![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png)](https://travis-ci.org/voxpupuli/puppet-filemapper)
 
 Description
 -----------
