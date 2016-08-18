@@ -26,7 +26,7 @@ describe PuppetX::FileMapper do
 
   let(:single_file_provider) do
     dummytype.provide(:single) do
-      include described_class
+      include PuppetX::FileMapper
       def self.target_files
         ['/single/file/provider']
       end
@@ -47,7 +47,7 @@ describe PuppetX::FileMapper do
 
   let(:multiple_file_provider) do
     dummytype.provide(:multiple, resource_type: dummytype) do
-      include described_class
+      include PuppetX::FileMapper
       def self.target_files
         ['/multiple/file/provider-one', '/multiple/file/provider-two']
       end
@@ -79,7 +79,7 @@ describe PuppetX::FileMapper do
 
   describe 'when included' do
     describe 'after initializing attributes' do
-      subject { dummytype.provide(:foo) { include described_class } }
+      subject { dummytype.provide(:foo) { include PuppetX::FileMapper } }
 
       it do
         expect(subject.mapped_files).to be_empty
@@ -113,7 +113,7 @@ describe PuppetX::FileMapper do
   describe 'when validating the class' do
     describe "and it doesn't implement self.target_files" do
       subject do
-        dummytype.provide(:incomplete) { include described_class }
+        dummytype.provide(:incomplete) { include PuppetX::FileMapper }
       end
 
       it {
@@ -124,7 +124,7 @@ describe PuppetX::FileMapper do
     describe "and it doesn't implement self.parse_file" do
       subject do
         dummytype.provide(:incomplete) do
-          include described_class
+          include PuppetX::FileMapper
           def self.target_files; end
         end
       end
@@ -135,7 +135,7 @@ describe PuppetX::FileMapper do
     describe "and it doesn't implement #select_file" do
       subject do
         dummytype.provide(:incomplete) do
-          include described_class
+          include PuppetX::FileMapper
           def self.target_files; end
 
           def self.parse_file(_filename, _content); end
@@ -152,7 +152,7 @@ describe PuppetX::FileMapper do
     describe "and it doesn't implement self.format_file" do
       subject do
         dummytype.provide(:incomplete) do
-          include described_class
+          include PuppetX::FileMapper
           def self.target_files; end
 
           def self.parse_file(_filename, _content); end
