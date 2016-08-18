@@ -1,23 +1,19 @@
-CHANGELOG
-=========
-
-1.2.0
------
-
-2016 - TBD
+## 2016-08-18 Release 2.0.0
 
 This is a backwards incompatible release.
 
   * Drop Ruby 1.8.7 support
   * Move to voxpupuli namespace
+  * Modulesync with latest voxpupuli defaults
   * Significant code quality improvements
+  * Sync mk_resource_methods with Puppet Core
+  * Find the correct name of the namevar
+  * 
 
-Thanks to Joseph Yaworski for his work on this release.
+Thanks to Joseph Yaworski and the Vox Pupuli team for their work on this release.
 
-1.1.3
------
 
-2014-09-02
+## 2014-09-02 Release 1.1.3
 
 This is a backwards compatible bugfix release.
 
@@ -25,19 +21,15 @@ This is a backwards compatible bugfix release.
 
 Thanks to Igor Galić for his work on this release.
 
-1.1.2
------
 
-2013-07-04
+## 2013-07-04 Release 1.1.2
 
 This is a backwards compatible bugfix release.
 
   * Update permissions of built modules to be a+rX.
 
-1.1.1
------
 
-2012-12-30
+## 2012-12-30 Release 1.1.1
 
 This is a backwards compatible bugfix release.
 
@@ -45,10 +37,8 @@ This is a backwards compatible bugfix release.
 
 Thanks to Reid Vandewiele for his contribution for this release.
 
-1.1.0
------
 
-2012-12-07
+## 2012-12-07 Release 1.1.0
 
 This is a backwards compatible feature release.
 
@@ -58,16 +48,16 @@ This is a backwards compatible feature release.
   * (maint) spec cleanup for readability
   * (filemapper-#2) Add pre and post flush hook support
 
-1.0.2
------
+
+## 2012-10-28 Release 1.0.2
 
 This is a backwards compatible maintenance release.
 
   * Update metadata to reference forge username
   * Ensure implementing classes return a string from format_file
 
-1.0.1
------
+
+## 2012-10-16 Release 1.0.1
 
 This is a backwards compatible maintenance release.
 
