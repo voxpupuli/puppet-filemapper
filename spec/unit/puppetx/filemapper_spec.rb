@@ -1,6 +1,11 @@
 require 'spec_helper'
 require 'puppetx/filemapper'
 
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable RSpec/AnyInstance
+# rubocop:disable RSpec/FilePath
+# rubocop:disable RSpec/DescribedClass
+
 describe PuppetX::FileMapper do
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
