@@ -93,19 +93,19 @@ describe PuppetX::FileMapper do
       subject { multiple_file_provider.new(params_yay) }
 
       describe 'for properties' do
-        it {
+        it do
           expect(subject).to respond_to(:dummy_property)
           expect(subject).to respond_to(:dummy_property=)
           expect(subject).to respond_to(:ensure)
           expect(subject).to respond_to(:ensure=)
-        }
+        end
       end
 
       describe 'for parameters' do
-        it {
+        it do
           expect(subject).not_to respond_to(:dummy_param)
           expect(subject).not_to respond_to(:dummy_param=)
-        }
+        end
       end
     end
   end
@@ -116,9 +116,9 @@ describe PuppetX::FileMapper do
         dummytype.provide(:incomplete) { include PuppetX::FileMapper }
       end
 
-      it {
+      it do
         expect { subject.validate_class! }.to raise_error(Puppet::DevError, %r{self.target_files})
-      }
+      end
     end
 
     describe "and it doesn't implement self.parse_file" do
@@ -629,17 +629,17 @@ describe PuppetX::FileMapper do
       subject { multiple_file_provider.collect_providers_for_file('/multiple/file/provider-flush').map(&:name) }
 
       describe 'present resources' do
-        it {
+        it do
           expect(subject).to include('yay')
           expect(subject).to include('whee')
           expect(subject).to include('unmanaged_resource')
-        }
+        end
       end
 
       describe 'absent resources' do
-        it {
+        it do
           expect(subject).not_to include('nope')
-        }
+        end
       end
     end
   end
