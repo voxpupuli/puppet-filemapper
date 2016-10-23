@@ -4,6 +4,7 @@ AllCops:
   Include:
     - ./**/*.rb
   Exclude:
+    - files/**/*
     - vendor/**/*
     - .vendor/**/*
     - pkg/**/*
@@ -55,6 +56,9 @@ Style/AndOr:
 
 Style/RedundantSelf:
   Enabled: True
+
+Metric/BlockLength:
+  Enabled: False
 
 # Method length is not necessarily an indicator of code quality
 Metrics/MethodLength:
