@@ -1,10 +1,12 @@
 require 'spec_helper'
 require 'puppetx/filemapper'
 
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/AnyInstance
-# rubocop:disable RSpec/FilePath
 # rubocop:disable RSpec/DescribedClass
+# rubocop:disable RSpec/FilePath
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable RSpec/MultipleExpectations
+# rubocop:disable RSpec/NestedGroups
 
 describe PuppetX::FileMapper do
   before do
@@ -16,7 +18,7 @@ describe PuppetX::FileMapper do
     Puppet::Util::FileType.stubs(:filetype).with(:crontab).returns(@crontype)
   end
 
-  after :each do
+  after do
     dummytype.defaultprovider = nil
   end
 
@@ -78,7 +80,7 @@ describe PuppetX::FileMapper do
   let(:params_whee) { { name: 'whee', dummy_param: :ohai, dummy_property: 'wat' } }
   let(:params_nope) { { name: 'dead', dummy_param: :nofoo, dummy_property: 'sadprop' } }
 
-  after :each do
+  after do
     dummytype.provider_hash.clear
   end
 
@@ -541,7 +543,7 @@ describe PuppetX::FileMapper do
       let(:resource) { dummytype.new(params_yay) }
       let(:stub_filetype) { stub }
 
-      before :each do
+      before do
         subject.mapped_files['/multiple/file/provider-flush'][:filetype] = stub_filetype
         subject.dirty_file!('/multiple/file/provider-flush')
 
@@ -569,7 +571,7 @@ describe PuppetX::FileMapper do
   describe 'flush hooks' do
     subject { multiple_file_provider }
 
-    before :each do
+    before do
       subject.dirty_file!('/multiple/file/provider-flush')
     end
 
