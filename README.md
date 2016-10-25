@@ -1,33 +1,31 @@
-Puppet FileMapper
-=================
+# FileMapper module for Puppet
 
-[![Puppet Forge](http://img.shields.io/puppetforge/v/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Puppet Forge downloads](https://img.shields.io/puppetforge/dt/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Puppet Forge score](https://img.shields.io/puppetforge/f/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png)](https://travis-ci.org/voxpupuli/puppet-filemapper)
+[![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png?branch=master)](https://travis-ci.org/voxpupuli/puppet-filemapper)
+[![Code Coverage](https://coveralls.io/repos/github/voxpupuli/puppet-filemapper/badge.svg?branch=master)](https://coveralls.io/github/voxpupuli/puppet-filemapper)
+[![Puppet Forge](https://img.shields.io/puppetforge/v/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - downloads](https://img.shields.io/puppetforge/dt/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - endorsement](https://img.shields.io/puppetforge/e/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - scores](https://img.shields.io/puppetforge/f/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
 
-Synopsis
---------
+## Synopsis
 
 Map files to resources and back with this handy dandy mixin!
 
-Description
------------
+## Description
 
 Things that are harder than they should be:
 
-  * Acquiring a pet monkey
-  * Getting anywhere in Los Angeles
-  * Understanding the ParsedFile provider
-  * Writing Puppet providers that directly manipulate files
+* Acquiring a pet monkey
+* Getting anywhere in Los Angeles
+* Understanding the ParsedFile provider
+* Writing Puppet providers that directly manipulate files
 
 The solution for this is to completely bypass parsing in any sort of base
 provider, and delegate the role of parsing and generating to including classes.
 
 You figure out how to parse and write the file, and this will do the rest.
 
-Synopsis of implementation requirements
----------------------------------------
+## Synopsis of implementation requirements
 
 Providers using the Filemapper extension need to implement the following
 methods.
@@ -54,8 +52,7 @@ This should take two values, a string containing the file name to be flushed,
 and an array of providers that should be flushed to this file. It should return
 a string containing the contents of the file to be written.
 
-Synopsis of optional implementation hooks
------------------------------------------
+## Synopsis of optional implementation hooks
 
 ### `self.pre_flush_hook(filename)` and `self.post_flush_hook(filename)`
 
@@ -73,16 +70,14 @@ occur. This can be used for recovery if something goes wrong during the flush.
 If this method raises an exception, the provider will be marked as failed and
 will refuse to perform any more flushes.
 
-Removing empty files
---------------------
+## Removing empty files
 
 If a file is empty, it's often reasonable to just delete it. The Filemapper
 mixin implements `attr_accessor :unlink_empty_files`. If that value is set to
 true, then if `self.format_file` returns the empty string then the file will be
 deleted from the file system.
 
-How it works
-------------
+## How it works
 
 [transaction]: http://somethingsinistral.net/blog/reading-puppet-the-transaction/
 
@@ -188,8 +183,7 @@ and needs to be included. This is done because the Filemapper extension only
 you can use the Filemapper extension while inheriting from something like the
 Puppet::Provider::Package provider.
 
-The Backstory
--------------
+## The Backstory
 
 Managing Unix-ish systems generally means dealing with one of two things:
 
@@ -243,8 +237,7 @@ multiple files, *basic* is the indicative word.
 The Filemapper extension has been designed as a lower level alternative
 to the ParsedFile.
 
-Examples
---------
+## Examples
 
 [puppet-network]: https://github.com/voxpupuli/puppet-network
 
