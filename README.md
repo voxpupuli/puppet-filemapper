@@ -1,9 +1,11 @@
 # FileMapper module for Puppet
 
-[![Puppet Forge](http://img.shields.io/puppetforge/v/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Puppet Forge downloads](https://img.shields.io/puppetforge/dt/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Puppet Forge score](https://img.shields.io/puppetforge/f/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
-[![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png)](https://travis-ci.org/voxpupuli/puppet-filemapper)
+[![Build Status](https://travis-ci.org/voxpupuli/puppet-filemapper.png?branch=master)](https://travis-ci.org/voxpupuli/puppet-filemapper)
+[![Code Coverage](https://coveralls.io/repos/github/voxpupuli/puppet-filemapper/badge.svg?branch=master)](https://coveralls.io/github/voxpupuli/puppet-filemapper)
+[![Puppet Forge](https://img.shields.io/puppetforge/v/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - downloads](https://img.shields.io/puppetforge/dt/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - endorsement](https://img.shields.io/puppetforge/e/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
+[![Puppet Forge - scores](https://img.shields.io/puppetforge/f/puppet/filemapper.svg)](https://forge.puppetlabs.com/puppet/filemapper)
 
 ## Synopsis
 
