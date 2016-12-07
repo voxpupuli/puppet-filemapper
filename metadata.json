@@ -1,6 +1,6 @@
 {
   "name": "puppet-filemapper",
-  "version": "2.0.1",
+  "version": "2.0.2-rc0",
   "author": "Vox Pupuli",
   "summary": "Developer extension for permitting complex manipulation of file contents as resources",
   "license": "Apache-2.0",
