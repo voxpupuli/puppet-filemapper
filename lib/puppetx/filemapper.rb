@@ -164,11 +164,17 @@ module PuppetX::FileMapper
       # Read and parse each file.
       provider_hashes = []
       @mapped_files.each_pair do |filename, file_attrs|
-        arr = parse_file(filename, file_attrs[:filetype].read)
-        raise Puppet::DevError, "expected #{self}.parse_file to return an Array, got a #{arr.class}" unless arr.is_a?(Array)
-        provider_hashes.concat(arr)
-      end
+        # The filetype path must be a type pathname, or it must respond to to_str
+        # If it doesn't meet these criteria go to next file
+        path = file_attrs[:filetype].path
 
+        next unless path.is_a?(Pathname) || path.respond_to?(:to_str)
+        arr = parse_file(filename, file_attrs[:filetype].read)
+        unless arr.is_a? Array
+          raise Puppet::DevError, "expected #{self}.parse_file to return an Array, got a #{arr.class}"
+        end
+        provider_hashes.concat arr
+      end
       provider_hashes
     end
 
