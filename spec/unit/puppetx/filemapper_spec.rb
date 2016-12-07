@@ -212,7 +212,6 @@ describe PuppetX::FileMapper do
       end
 
       describe 'when parsing' do
-
         it 'parses each file' do
           subject.expects(:parse_file).with('/multiple/file/provider-one', 'barbar').returns([])
           subject.expects(:parse_file).with('/multiple/file/provider-two', 'bazbaz').returns([])
