@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+## 2016-12-08 Release 2.0.1
+
+  * Modulesync with latest Vox Pupuli changes
+  * Fix several rubocop issues
+  * define #path on filetype mocks/fix broken symbols
+
 ## 2016-08-19 Release 2.0.0
 
 This is a backwards incompatible release.
