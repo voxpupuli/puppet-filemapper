@@ -6,7 +6,6 @@ require 'puppetx/filemapper'
 # rubocop:disable RSpec/FilePath
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/NestedGroups
 
 describe PuppetX::FileMapper do
   before do
