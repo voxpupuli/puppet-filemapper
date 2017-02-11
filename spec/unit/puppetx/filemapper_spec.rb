@@ -6,7 +6,7 @@ require 'puppetx/filemapper'
 # rubocop:disable RSpec/FilePath
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
-
+# rubocop:disable RSpec/ScatteredSetup
 describe PuppetX::FileMapper do
   before do
     @ramtype  = Puppet::Util::FileType.filetype(:ram)
