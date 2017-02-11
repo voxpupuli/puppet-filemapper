@@ -1,5 +1,10 @@
-CHANGELOG
-=========
+# CHANGELOG
+
+## 2017-02-11 Release 2.1.0
+
+This is the last release with Puppet3 support!
+* Set minimum version_requirement for Puppet
+* Remove unnecessary disabling of RSpec/NestedGroups
 
 ## 2016-12-08 Release 2.0.1
 
