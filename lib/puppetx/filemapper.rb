@@ -106,7 +106,6 @@ module PuppetX::FileMapper
         h[:ensure] = :present
         new(h)
       end
-
     rescue
       # If something failed while loading instances, mark the provider class
       # as failed and pass the exception along
