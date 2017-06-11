@@ -268,7 +268,7 @@ describe PuppetX::FileMapper do
     it 'generates a provider instance for each hash' do
       provs = subject.instances
       expect(provs.size).to eq(2)
-      provs.each { |prov| expect(prov).to be_a_kind_of(Puppet::Provider) }
+      expect(provs).to all(be_a_kind_of(Puppet::Provider))
     end
 
     [
@@ -293,7 +293,7 @@ describe PuppetX::FileMapper do
       subject.stubs(:instances).returns [provider_yay, provider_whee]
     end
 
-    let(:resources) do
+    let(:resources) do # rubocop:disable RSpec/ScatteredLet
       [params_yay, params_whee, params_nope].each_with_object({}) do |params, h|
         h[params[:name]] = dummytype.new(params)
       end
