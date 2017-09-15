@@ -268,7 +268,7 @@ describe PuppetX::FileMapper do
     it 'generates a provider instance for each hash' do
       provs = subject.instances
       expect(provs.size).to eq(2)
-      provs.each { |prov| expect(prov).to be_a_kind_of(Puppet::Provider) }
+      expect(provs).to all(be_a_kind_of(Puppet::Provider))
     end
 
     [
@@ -293,7 +293,7 @@ describe PuppetX::FileMapper do
       subject.stubs(:instances).returns [provider_yay, provider_whee]
     end
 
-    let(:resources) do
+    let(:resources) do # rubocop:disable RSpec/ScatteredLet
       [params_yay, params_whee, params_nope].each_with_object({}) do |params, h|
         h[params[:name]] = dummytype.new(params)
       end
@@ -323,6 +323,7 @@ describe PuppetX::FileMapper do
 
     describe 'from absent to present' do
       let(:resource) { dummytype.new(name: 'boom', dummy_property: 'bang') }
+
       it 'marks the related file as dirty' do
         expect(subject.mapped_files['/multiple/file/provider-flush'][:dirty]).to be(false)
         resource.property(:ensure).sync
@@ -448,12 +449,12 @@ describe PuppetX::FileMapper do
     subject { multiple_file_provider }
 
     before do
-      subject.stubs(:format_file).returns %w(definitely not of class String)
+      subject.stubs(:format_file).returns %w[definitely not of class String]
       subject.dirty_file!('/multiple/file/provider-flush')
     end
 
     it 'raises an error if given an invalid value for file contents' do
-      subject.expects(:perform_write).with('/multiple/file/provider-flush', %w(invalid data)).never
+      subject.expects(:perform_write).with('/multiple/file/provider-flush', %w[invalid data]).never
       expect { subject.flush_file('/multiple/file/provider-flush') }.to raise_error(Puppet::DevError, %r{expected .* to return a String, got a Array})
     end
   end
