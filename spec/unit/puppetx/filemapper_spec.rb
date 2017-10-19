@@ -3,7 +3,6 @@ require 'puppetx/filemapper'
 
 # rubocop:disable RSpec/AnyInstance
 # rubocop:disable RSpec/DescribedClass
-# rubocop:disable RSpec/FilePath
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/ScatteredSetup
