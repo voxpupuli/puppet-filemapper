@@ -134,7 +134,7 @@ module PuppetX::FileMapper
     #
     # @return [Array<Hash<String, Hash<Symbol, Object>>>]
     #   An array containing a set of hashes, keyed with a file path and values
-    #   being a hash containg the state of the file and the filetype associated
+    #   being a hash containing the state of the file and the filetype associated
     #   with it.
     #
     # @example
