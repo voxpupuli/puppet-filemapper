@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'puppetx/filemapper'
 
@@ -273,7 +275,7 @@ describe PuppetX::FileMapper do
       { name: 'yay', dummy_property: 'baz' },
       { name: 'whee', dummy_property: 'wat' }
     ].each do |values|
-      it "should match hash values to provider properties for #{values[:name]}" do
+      it "matches hash values to provider properties for #{values[:name]}" do
         provs = subject.instances
         prov = provs.find { |foundprov| foundprov.name == values[:name] }
         values.each_pair { |property, value| expect(prov.send(property)).to eq(value) }
