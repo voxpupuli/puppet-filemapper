@@ -268,7 +268,7 @@ describe PuppetX::FileMapper do
     it 'generates a provider instance for each hash' do
       provs = subject.instances
       expect(provs.size).to eq(2)
-      expect(provs).to all(be_a_kind_of(Puppet::Provider))
+      expect(provs).to all(be_a(Puppet::Provider))
     end
 
     [
