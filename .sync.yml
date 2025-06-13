@@ -1,3 +1,7 @@
 ---
 spec/spec_helper.rb:
   mock_with: ':mocha'
+Gemfile:
+  optional:
+    ':test':
+      - gem: 'mocha'
