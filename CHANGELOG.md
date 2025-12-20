@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 Each new release typically also includes the latest modulesync defaults.
 These should not affect the functionality of the module.
 
+## [v5.0.0](https://github.com/voxpupuli/puppet-filemapper/tree/v5.0.0) (2025-12-20)
+
+[Full Changelog](https://github.com/voxpupuli/puppet-filemapper/compare/v4.0.0...v5.0.0)
+
+**Breaking changes:**
+
+- Drop puppet, update openvox minimum version to 8.19 [\#86](https://github.com/voxpupuli/puppet-filemapper/pull/86) ([TheMeier](https://github.com/TheMeier))
+
+**Implemented enhancements:**
+
+- metadata.json: Add OpenVox [\#85](https://github.com/voxpupuli/puppet-filemapper/pull/85) ([jstraw](https://github.com/jstraw))
+
 ## [v4.0.0](https://github.com/voxpupuli/puppet-filemapper/tree/v4.0.0) (2023-11-30)
 
 [Full Changelog](https://github.com/voxpupuli/puppet-filemapper/compare/v3.1.0...v4.0.0)
